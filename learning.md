@@ -10,3 +10,8 @@
 - Auto Rename Tag by Jun Han
 - Console Ninja by Wallaby.js
 - Tailwind CSS IntelliSense by Tailwind Labs
+
+#### 2 create pages and browser router
+
+1. used pkg of react-router-dom
+2. create home, about-us, profile, signup and signin routes
