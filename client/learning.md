@@ -49,3 +49,44 @@ Adds a small amount of UI state and interaction complexity.
 
 **Chosen because:**
 The complexity is minimal and provides a better responsive UX.
+
+#### create a server
+
+1. instal express, dotenv
+2. move git from client to root so that deployment on render becomes easy
+
+#### connect to db
+
+1.  install mongoose
+2.  what i learn is that since i m using type: module so
+    // to send any function do
+
+                                     // ONE WAY
+
+```js
+  const connectDB = async(){
+
+  }
+
+  export default connect DB
+
+
+  //and to import
+
+  import connectDB from file_path
+```
+
+                                    // Second way of NAmed export
+
+```js
+  export const connectDB = async(){
+
+  }
+
+
+  //and to import
+
+  import {connectDB} from file_path
+```
+
+3. use of env for MONGO_URL
