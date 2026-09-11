@@ -1,34 +1,28 @@
 {
-  "name": "client",
-  "private": true,
-  "version": "0.0.0",
+  "name": "propora",
+  "version": "1.0.0",
+  "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "start": "node api/server.js",
+    "dev": "nodemon api/server.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mhassanobaid/propora-fe.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mhassanobaid/propora-fe/issues"
+  },
+  "homepage": "https://github.com/mhassanobaid/propora-fe#readme",
+  "description": "",
   "dependencies": {
-    "@tailwindcss/vite": "^4.3.3",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "react-icons": "^5.7.0",
-    "react-router-dom": "^7.18.3",
-    "tailwindcss": "^4.3.3"
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.7",
-    "@eslint/js": "^10.0.1",
-    "@rolldown/plugin-babel": "^0.2.3",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.1.0",
-    "babel-plugin-react-compiler": "^1.0.0",
-    "eslint": "^10.9.0",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-react-refresh": "^0.5.4",
-    "globals": "^17.11.0",
-    "vite": "^8.2.2"
+    "nodemon": "^3.1.14"
   }
 }
