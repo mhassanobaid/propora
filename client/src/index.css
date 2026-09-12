@@ -3,3 +3,7 @@
 @theme {
   --font-aptos: 'Aptos', 'Segoe UI', sans-serif;
 }
+
+body {
+  background-color: rgb(241, 245, 241);
+}
