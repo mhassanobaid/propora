@@ -112,3 +112,11 @@ The complexity is minimal and provides a better responsive UX.
    import userRouter from "./routes/user.router.js"
 7. Always put .js file exension in module type of applcations
 8. NOT DONE YET error middleware and utils./ErrorHanler
+
+#### create a signup route
+
+1. since we have to accepte data from FE so use app.use(express.join) or any other like urlencoded
+2. hash the pasword in contoller actiosn seem repetitive so create model method as callback or method nad use them in controllers [ BEST PRACTICE ]
+   <<< REMEMBER that in model methods where you want to access data of document then that model's function's function must not be arror becuase REMEMBER
+   arrow has not this>>>
+3. always remember to put async and await in time taking tasks and when there is such time taking or external task like querying a db then always put try/catch also
