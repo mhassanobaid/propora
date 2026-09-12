@@ -1,5 +1,6 @@
 import express from "express";
 // const error = require("./middlewares/error");
+import errorMiddleware from "./middlewares/error.js";
 
 const app = express();
 
@@ -13,6 +14,6 @@ import authRoutes from "./routes/auth.route.js";
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/", authRoutes);
 
-// app.use(error);
+app.use(errorMiddleware);
 
 export default app;
