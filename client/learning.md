@@ -90,3 +90,25 @@ The complexity is minimal and provides a better responsive UX.
 ```
 
 3. use of env for MONGO_URL
+
+#### crate a test api route
+
+1. learn that we wlll be using Proxy in future in order to decouple or client code
+   from backend url because we dont want that our front end is having our EXPLICIT backend enpoint bccause in evelopmet it will be lcalhost but in future WHEN DEPLOYED , we wil be changing it everywhere in whoel fe code
+2. adv will be CLEARN URLS, CENTRALISED ROUTING, easier CORS handling
+3. DISADV is that More INfrastructure, More Confugurations
+4. 2 types , Forward Proxy lke pucit having
+   request->forward proxy ->Internet
+   REverse Proxy
+   mostly used like Nginx, Apache, CLoudflare, Kubernetes
+   request->Internet->
+5. in order to prevent index to be large file we use
+   - roues , -> good practice is user.routes
+     when importing contoller in route file ALWAYS add .js with file name
+   - controllers(having business logic) -> good practice is user.controller
+     since we would be having many functions or actions in controller so HAVE TO use NAME EXPORT here
+   - models -> user.model.js
+6. after doing defult export , we can rename in app.js as userRouter via
+   import userRouter from "./routes/user.router.js"
+7. Always put .js file exension in module type of applcations
+8. NOT DONE YET error middleware and utils./ErrorHanler

@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 let cachedConnection = null;
 let cachedConnectionPromise = null;
 
-export const connectDB = async () => {
+const connectDB = async () => {
   // Already connected
   if (cachedConnection && mongoose.connection.readyState === 1) {
     return cachedConnection;
@@ -33,3 +33,5 @@ export const connectDB = async () => {
     throw error;
   }
 };
+
+export default connectDB;
