@@ -120,3 +120,60 @@ The complexity is minimal and provides a better responsive UX.
    <<< REMEMBER that in model methods where you want to access data of document then that model's function's function must not be arror becuase REMEMBER
    arrow has not this>>>
 3. always remember to put async and await in time taking tasks and when there is such time taking or external task like querying a db then always put try/catch also
+
+#### complete ui functionality
+
+1. onchange event listener??
+2. ctrl + space in vs code for suggestion
+3. dont want to referesh page so use event.preveedefault
+4. always fr fucntionaiity form me action hoga and then onChange to each input field;s function will set state of form data for submtting it to server
+5.
+
+# Forward Proxy vs Reverse Proxy
+
+### Core Definition
+
+> **Forward Proxy = represents the CLIENT.**
+> **Reverse Proxy = represents the SERVER.**
+
+| Point                   | Forward Proxy                                          | Reverse Proxy                                          |
+| ----------------------- | ------------------------------------------------------ | ------------------------------------------------------ |
+| **1. Represents**       | Client                                                 | Server                                                 |
+| **2. Direction**        | Client → Proxy → Internet                              | Internet → Proxy → Backend                             |
+| **3. Main purpose**     | Control/protect **outbound client traffic**            | Protect/scale **inbound server traffic**               |
+| **4. Common use cases** | IP hiding, content filtering, corporate access control | Load balancing, SSL termination, caching, routing, WAF |
+
+### Production Examples
+
+**Forward Proxy:**
+
+```text
+Employees → Corporate Proxy → Internet
+```
+
+Used by organizations to control/filter employees' internet access.
+
+**Reverse Proxy:**
+
+```text
+Users → Nginx/Cloudflare → Backend Servers
+```
+
+Used to hide backend infrastructure, route requests, load-balance traffic, terminate SSL, etc.
+
+### Vite Example
+
+```text
+Browser → Vite Dev Server → Backend
+```
+
+Vite's `server.proxy` is acting as a **reverse proxy** because it sits in front of the backend and forwards client requests to the backend.
+
+### 🧠 Interview Memory Trick
+
+> **Forward = CLIENT's representative → traffic going OUT.**
+> **Reverse = SERVER's representative → traffic coming IN.**
+
+### ⭐ Interview Answer
+
+> "A forward proxy acts on behalf of clients to access external resources, while a reverse proxy acts on behalf of servers to receive and route client requests. Forward proxies are commonly used for client-side access control and privacy, whereas reverse proxies are commonly used for load balancing, security, caching, SSL termination, and routing."
