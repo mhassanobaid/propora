@@ -177,3 +177,20 @@ Vite's `server.proxy` is acting as a **reverse proxy** because it sits in front 
 ### ⭐ Interview Answer
 
 > "A forward proxy acts on behalf of clients to access external resources, while a reverse proxy acts on behalf of servers to receive and route client requests. Forward proxies are commonly used for client-side access control and privacy, whereas reverse proxies are commonly used for load balancing, security, caching, SSL termination, and routing."
+
+#### create sign in api
+
+1. remember in js6 if User.findOne(email) is ocrect instead of User.findOn(email:email)
+
+```text
+    const user = await User.findOne({ email }).select("+password");
+
+    instead of
+    const user = await User.findOne({ email: email }).select("+password");
+```
+
+2. jwt sign, compare
+3. jwt via cookie so expire it
+4. remember in model where you need self document then always don use arrow function
+5. MONgo Db is ODM not ORM
+6. added validator and jwt in packages for model level validations and jwt generation on sign in
