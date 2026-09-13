@@ -194,3 +194,13 @@ Vite's `server.proxy` is acting as a **reverse proxy** because it sits in front 
 4. remember in model where you need self document then always don use arrow function
 5. MONgo Db is ODM not ORM
 6. added validator and jwt in packages for model level validations and jwt generation on sign in
+
+#### complete sign in functonality alon with ui
+
+1. in sign in ui page while writing p tag of Dont have account Sign up
+   never write apostrophee in Dont as will cuse issue in prod ??
+2. never send password in FE
+3. BUT since password selection is false in model level so in login when querying user for finding it in db then do select(+password) WHY because password comparison is done via compare
+   bcrypt -> hash, compare
+   methof of bcryptjs but in jwttoken remove it so that client dont use it
+4. after user coming in FE, we have to use Redux to set data globally for React app to be used in Profile editing etc
