@@ -220,3 +220,49 @@ https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow#immutabili
 4. in store middlware explanation
 
 > middleware allows us to customize the default Redux middleware used by configureStore. Here, getDefaultMiddleware() keeps the default middleware but disables the serializable check. Advantage: avoids warnings/errors when actions or state contain non-serializable values like File or Date. Disadvantage: disabling the check can hide bugs caused by accidentally storing non-serializable data in Redux.
+
+#### redux persist
+
+1. REDUX PERSIST — INTERVIEW
+
+WHAT?
+→ library Persists Redux state to storage.
+
+WHY?
+→ Redux state normally disappears on page refresh.
+→ Persisted state survives refresh/restart.
+
+HOW?
+→ persistReducer() wraps the reducer.
+→ persistStore(store) creates the persistor.
+→ PersistGate waits for rehydration.
+
+FLOW:
+
+STATE CHANGE
+↓
+Redux Store
+↓
+redux-persist
+↓
+Storage 💾
+
+PAGE REFRESH
+↓
+Storage
+↓
+redux-persist
+↓
+REHYDRATION
+↓
+Redux Store
+↓
+React App
+
+GOLDEN LINE:
+"Redux Persist persists required Redux state to storage
+and rehydrates it when the application starts."
+
+KEYWORD:
+Persist = SAVE
+Rehydrate = RESTORE
