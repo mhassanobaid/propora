@@ -204,3 +204,19 @@ Vite's `server.proxy` is acting as a **reverse proxy** because it sits in front 
    bcrypt -> hash, compare
    methof of bcryptjs but in jwttoken remove it so that client dont use it
 4. after user coming in FE, we have to use Redux to set data globally for React app to be used in Profile editing etc
+
+#### add redux tool kit to application
+
+1. to solve above PROBLEM of having user globally we would be using redux
+2. steps -> instal redux-toolkit, devredux, create store, wrap whole app by store and provider, create slices like userSlice and in it store states of each resource like for user startSignIn, save result ,endSignIn in slicer's reducers, then import those slicers in store, and then updating UI like signin.jsx to use useSelector to fetch data from store and useDispatch to set data in store via reducers
+3. PROBLEM after doing it, one issue is that on referesh data is not persisted in store
+   SOLUTION is having redux persist which will be covered next
+
+important link
+https://daveceddia.com/javascript-references/
+https://daveceddia.com/react-redux-immutability-guide/
+https://redux.js.org/tutorials/fundamentals/part-2-concepts-data-flow#immutability
+
+4. in store middlware explanation
+
+> middleware allows us to customize the default Redux middleware used by configureStore. Here, getDefaultMiddleware() keeps the default middleware but disables the serializable check. Advantage: avoids warnings/errors when actions or state contain non-serializable values like File or Date. Disadvantage: disabling the check can hide bugs caused by accidentally storing non-serializable data in Redux.
