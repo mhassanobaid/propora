@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { FaSearch, FaBars, FaTimes } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 export default function Header() {
+  const { currentUser } = useSelector((state) => state.user);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -42,11 +44,16 @@ export default function Header() {
               About
             </Link>
 
-            <Link
-              to="/sign-in"
-              className="text-slate-700 hover:text-slate-900 transition-colors"
-            >
-              Sign In
+            <Link to="/profile">
+              {currentUser ? (
+                <img
+                  className="rounded-full h-7 w-7 object-cover"
+                  src={currentUser?.avatar}
+                  alt="profile"
+                />
+              ) : (
+                <li className=" text-slate-700 hover:underline"> Sign in</li>
+              )}
             </Link>
           </nav>
 
@@ -81,12 +88,16 @@ export default function Header() {
               About
             </Link>
 
-            <Link
-              to="/sign-in"
-              onClick={() => setIsMenuOpen(false)}
-              className="text-slate-700 hover:text-slate-900"
-            >
-              Sign In
+            <Link to="/profile">
+              {currentUser ? (
+                <img
+                  className="rounded-full h-7 w-7 object-cover"
+                  src={currentUser?.avatar}
+                  alt="profile"
+                />
+              ) : (
+                <li className=" text-slate-700 hover:underline"> Sign in</li>
+              )}
             </Link>
           </nav>
         )}

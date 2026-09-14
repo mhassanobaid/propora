@@ -34,7 +34,7 @@ export default function OAuth() {
       }
 
       // Store your application's authenticated user
-      dispatch(signInSuccess(data));
+      dispatch(signInSuccess(data.user));
 
       navigate('/');
     } catch (error) {

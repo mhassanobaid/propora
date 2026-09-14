@@ -375,3 +375,69 @@ Your protected API routes
 _`Engineering JUDGEMENT`NEVER write next in model's functions_
 
 ##### Next secti will be covering how to set header with these data coming from server or from local db AND Protect rotues so that only signed users can see "/"
+
+#### header saving user info and privatising routes
+
+```bash
+             PROTECTED ROUTE
+                   │
+                   ▼
+             PrivateRoute
+                   │
+          Check Redux auth state
+                   │
+             currentUser?
+              /         \
+            YES          NO
+             │            │
+             ▼            ▼
+         <Outlet />   <Navigate />
+             │            │
+             ▼            ▼
+        Child Route    /sign-in
+```
+
+> implemented protected routes using a route-guard pattern. The PrivateRoute checks the authenticated user from Redux; authenticated users are rendered through Outlet, while unauthenticated users are redirected using Navigate."
+
+1. since getting data having
+   user, success, token
+   so thats why set in store data.user
+   so that in header can do curretn_user.avatar
+2. React Router
+   │
+   ├── <Outlet />
+   │ └── Nested route rendering
+   │ "Where should child route render?"
+   │
+   ├── <Navigate />
+   │ └── Declarative redirect
+   │ "Redirect user to another route"
+   │
+   ├── useNavigate()
+   │ └── Imperative/programmatic navigation
+   │ "Navigate because an event/logic happened"
+   │
+   └── useNavigation()
+   └── Navigation state
+   "Is router currently navigating/submitting?"
+   ⭐ Golden interview lines
+
+`Outlet`:
+
+"Outlet is a placeholder for rendering matched nested child routes within a parent route."
+
+`Navigate`:
+
+"Navigate is a declarative redirect component; I commonly use it in protected routes to redirect unauthenticated users."
+
+`useNavigate`:
+
+"useNavigate is a hook that provides programmatic navigation, typically used after an event or business operation such as login, logout, or form submission."
+
+`useNavigation`:
+
+"useNavigation exposes the current navigation state, which I can use to implement loading or pending UI during route transitions."
+
+The easiest memory trick
+
+> Outlet → WHERE child renders Navigate → REDIRECT somewhere useNavigate → TELL router to go somewhere useNavigation→ KNOW router's current state
