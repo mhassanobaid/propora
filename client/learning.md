@@ -266,3 +266,112 @@ and rehydrates it when the application starts."
 KEYWORD:
 Persist = SAVE
 Rehydrate = RESTORE
+
+#### adding google oauth in app for signing in
+
+1. will use Firebase Google Athentication account and its Authentication feature
+
+   > open firebase google accunt->sign in colsone->getting start project name -> disable gemini and google analytics -> after successful creation -> will see project show page -> will see + Add app button (small sized) Click on it -> click web -> register app menu wil open, write of app and click on Register app -> Adding SDK [ i- install firebase pckage ii- write sdk code and at end EXPORT app iii- click on Continue to console button ] -> Go to autehtication -> signin method -> select google -> Enable -> enter public facing name of app and then select gamil and CLICK SAVE ->>>>>>>>>>>>>>>>> SUCCCCCCCESSSSSSSSSS
+
+```js
+  IMP THING IS we dont need to use .js for FE importing jsx files
+```
+
+2. will use Firebase SDK to connect our app with firebase
+3. store api_key of firebase again in ENV (convetion for env for vite is VITE_ENV_NAME and import.meta.env to import)
+4. REmeber to add atleast 2 acccounts to see popup to select account to signin
+5. once selected anyone then google will provide complete user from which
+   - email
+   - photo
+   - display_name
+     are important for us
+6. create a column of avatar in User as we will be using photo in future
+7. we will check that
+   if email is not present in our db then create user by having random password but hash this password again in order to store it in db and create token and send to client via cookie
+   else email present since email is unique so fetch user and send user in FE
+8. on succesfull signin set store of redux also and then redirect route of /
+
+flow
+
+```bash
+USER
+ │
+ │ Click "Continue with Google"
+ ▼
+React
+ │
+ │ signInWithPopup()
+ ▼
+Firebase Authentication
+ │
+ │ Google OAuth
+ ▼
+Google
+ │
+ │ successful authentication
+ ▼
+Firebase
+ │
+ │ Firebase User
+ │
+ │ getIdToken()
+ ▼
+React
+ │
+ │ Authorization: Bearer <ID_TOKEN>
+ ▼
+Express
+ │
+ │ Firebase Admin
+ │
+ │ verifyIdToken()
+ ▼
+Trusted Firebase identity
+ │
+ ├── uid
+ ├── email
+ ├── name
+ └── picture
+ │
+ ▼
+MongoDB User
+ │
+ ├── Existing user → update/link
+ │
+ └── New user → create
+ │
+ ▼
+sendToken()
+ │
+ ▼
+Your application's JWT
+ │
+ ▼
+React Redux
+ │
+ ▼
+Authenticated application
+```
+
+```bash
+Firebase ID Token
+       │
+       │ proves:
+       │ "Firebase authenticated this Google user"
+       ▼
+Express backend
+       │
+       │ verifies it
+       ▼
+Your application JWT
+       │
+       │ proves:
+       │ "This is an authenticated user
+       │  in MY application"
+       ▼
+Your protected API routes
+```
+
+_`Engineering JUDGEMENT`NEVER write next in model's functions_
+
+##### Next secti will be covering how to set header with these data coming from server or from local db AND Protect rotues so that only signed users can see "/"

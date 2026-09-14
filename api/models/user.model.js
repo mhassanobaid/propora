@@ -8,24 +8,52 @@ const userSchema = new mongoose.Schema(
     username: {
       type: String,
       required: true,
+      trim: true,
     },
+
     email: {
       type: String,
       required: [true, "Please Enter Your Email"],
       unique: true,
+      lowercase: true,
+      trim: true,
       validate: [validator.isEmail, "Please Enter a valid Email"],
     },
+
     password: {
       type: String,
-      required: [true, "Please Enter Your Password"],
-      minLength: [8, "Password should be greater than 8 characters"],
       select: false,
+      minLength: [8, "Password should be greater than 8 characters"],
+    },
+
+    avatar: {
+      type: String,
+      default: "",
+    },
+
+    firebaseUid: {
+      type: String,
+      unique: true,
+      // to ensure that unique works propeley on optional firebaseUid
+      sparse: true,
+    },
+
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
     },
   },
   {
     timestamps: true,
   },
 );
+
+userSchema.pre("validate", function () {
+  if (this.authProvider === "local" && !this.password) {
+    this.invalidate("password", "Password is required for local accounts");
+  }
+});
 
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) {

@@ -1,5 +1,4 @@
-import app from "./app.js";
-import dotenv from "dotenv";
+import "./config/env.js";
 import connectDB from "./config/db.js";
 
 // Handling Uncaught Exception
@@ -13,7 +12,6 @@ process.on("uncaughtException", (err) => {
 // dotenv.config({path: "be/config/config.env"})
 
 // if terminal is in be
-dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 
@@ -21,6 +19,8 @@ const PORT = process.env.PORT || 5000;
 // console.log(youtube);
 
 // connect to db
+
+import app from "./app.js";
 connectDB();
 
 const server = app.listen(PORT, () => {
