@@ -441,3 +441,8 @@ _`Engineering JUDGEMENT`NEVER write next in model's functions_
 The easiest memory trick
 
 > Outlet → WHERE child renders Navigate → REDIRECT somewhere useNavigate → TELL router to go somewhere useNavigation→ KNOW router's current state
+
+#### complete profile page ui
+
+1. mx-auto will bering in center irrspecive of viw port
+2. always put id with input fileds in order to identify them while fetching data from them
