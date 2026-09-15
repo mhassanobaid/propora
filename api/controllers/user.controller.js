@@ -51,6 +51,7 @@ export const deleteUser = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler(`User of id ${req.params.id} not found`, 404));
   }
 
+  res.clearCookie("token");
   await user.deleteOne();
 
   return res.status(200).json({

@@ -134,3 +134,8 @@ export const google = catchAsyncErrors(async (req, res, next) => {
   // Use your existing JWT system
   sendToken(user, 200, res);
 });
+
+export const signOut = catchAsyncErrors(async (req, res) => {
+  res.clearCookie("token");
+  res.status(200).json("User has been logged out!");
+});

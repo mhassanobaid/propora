@@ -564,3 +564,10 @@ so i do
 #### delete user functionality
 
 _`Engineering JUDGEMENT`Yes for EACH functionality we keep on ading reducers like for delete we add deleteUserStart, deleteUserSuccess and deleteUserEnd in slice of that resource like for user add reducers in userSlice_
+
+#### sign out functionlity
+
+1. just clear the cookie
+   `SIMILAR TO DELETE USER`
+2. again since it is new fucntinaity to `User` resource so have reducers of it
+   in userSlice
