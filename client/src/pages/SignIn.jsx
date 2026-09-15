@@ -36,14 +36,13 @@ export default function SignIn() {
       });
 
       const data = await res.json();
-      console.log(data);
 
       if (data.success === false) {
         dispatch(signInFailure(data.message));
         return;
       }
 
-      dispatch(signInSuccess(data));
+      dispatch(signInSuccess(data.user));
       navigate('/');
     } catch (error) {
       dispatch(signInFailure(error.message));

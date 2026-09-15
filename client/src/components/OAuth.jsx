@@ -14,7 +14,6 @@ export default function OAuth() {
 
       // creating pop up
       const result = await signInWithPopup(auth, provider);
-      console.log(result);
 
       // Get Firebase ID token
       const idToken = await result.user.getIdToken();

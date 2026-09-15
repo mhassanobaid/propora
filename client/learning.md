@@ -523,3 +523,40 @@ IMAGE UPLOAD
 1. // why again findById in action though we had quered mongodb for user fetching in middleware of auth but it might possible that our profile has stale data or non fresh data so to prevent it again fetch
 
 2. remember that if password given from FE then only update it but before updating dehash it so that we can see user has entered previous one if entered previous one then dont assign any thing to user(memoery object going to save) else changed then assign user.password = userUser.password so that it can be hashed by model method
+
+#### complete update profile functoanity icdung ui
+
+1.  issue was ccuring is that when server send data it was sending as
+    {
+    success: true/false;
+    user: {
+
+        }
+
+    }
+    and i was dispatching in signin, oauth and update as
+    dispatch(signInSuccess(data))
+    ^ it was resulting in
+
+```js
+current_user : {
+    user: {
+        email:...
+    }
+}
+```
+
+But i want
+
+```js
+current_user : {
+    email:
+    ...
+}
+```
+
+so i do
+
+> dispatch(data.user)
+
+> WHCICH SOLVES THE ISSUE

@@ -30,11 +30,7 @@ export const updateUserProfile = catchAsyncErrors(async (req, res, next) => {
   user.avatar = newUserData.avatar ?? user.avatar;
 
   if (newUserData.password) {
-    const isPasswordMatched = await user.comparePassword(newUserData.password);
-
-    if (!isPasswordMatched) {
-      user.password = newUserData.password;
-    }
+    user.password = newUserData.password;
   }
 
   await user.save();

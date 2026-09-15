@@ -72,7 +72,6 @@ export const google = catchAsyncErrors(async (req, res, next) => {
   }
 
   const idToken = authHeader.split("Bearer ")[1];
-  console.log(idToken);
 
   // Verify Firebase ID token
   const decodedToken = await firebaseAdminAuth.verifyIdToken(idToken);
