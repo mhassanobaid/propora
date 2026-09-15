@@ -560,3 +560,7 @@ so i do
 > dispatch(data.user)
 
 > WHCICH SOLVES THE ISSUE
+
+#### delete user functionality
+
+_`Engineering JUDGEMENT`Yes for EACH functionality we keep on ading reducers like for delete we add deleteUserStart, deleteUserSuccess and deleteUserEnd in slice of that resource like for user add reducers in userSlice_

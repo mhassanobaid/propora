@@ -40,3 +40,21 @@ export const updateUserProfile = catchAsyncErrors(async (req, res, next) => {
     user: user,
   });
 });
+
+export const deleteUser = catchAsyncErrors(async (req, res, next) => {
+  if (req.user.id !== req.params.id)
+    return next(new ErrorHandler(`You can delete your own account`, 401));
+  // we will remove cloudinary later
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    return next(new ErrorHandler(`User of id ${req.params.id} not found`, 404));
+  }
+
+  await user.deleteOne();
+
+  return res.status(200).json({
+    success: true,
+    message: `User of ${req.params.id} deleted successfully`,
+  });
+});
