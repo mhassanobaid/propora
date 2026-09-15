@@ -1,11 +1,13 @@
 import express from "express";
 // const error = require("./middlewares/error");
 import errorMiddleware from "./middlewares/error.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
 // will be used in sign up to have client data in json
 app.use(express.json());
+app.use(cookieParser());
 
 // routes import
 import userRoutes from "./routes/user.route.js";

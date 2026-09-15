@@ -453,11 +453,12 @@ The easiest memory trick
 
 > TILL YET WE HAVE USED 2 SERVICES OF FIREBASE OF AUTH AND STORAGE
 
-for using firebase for storage 
+for using firebase for storage
+
 - first login in firebase with gmail
 - select your project in console
 - on left menu db and stroage -> storage
-- 
+-
 
 ```bash
                                             1. SELECT
@@ -516,3 +517,9 @@ IMAGE UPLOAD
 3. track its progress through state_changed,
 4. retrieve the resulting download URL, and
 5. persist that URL as the user's avatar rather than storing the binary image in MongoDB
+
+#### create or update user
+
+1. // why again findById in action though we had quered mongodb for user fetching in middleware of auth but it might possible that our profile has stale data or non fresh data so to prevent it again fetch
+
+2. remember that if password given from FE then only update it but before updating dehash it so that we can see user has entered previous one if entered previous one then dont assign any thing to user(memoery object going to save) else changed then assign user.password = userUser.password so that it can be hashed by model method

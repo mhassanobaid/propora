@@ -49,11 +49,11 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-userSchema.pre("validate", function () {
-  if (this.authProvider === "local" && !this.password) {
-    this.invalidate("password", "Password is required for local accounts");
-  }
-});
+// userSchema.pre("validate", function () {
+//   if (this.authProvider === "local" && !this.password) {
+//     this.invalidate("password", "Password is required for local accounts");
+//   }
+// });
 
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) {
