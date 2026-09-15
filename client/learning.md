@@ -446,3 +446,73 @@ The easiest memory trick
 
 1. mx-auto will bering in center irrspecive of viw port
 2. always put id with input fileds in order to identify them while fetching data from them
+
+#### Complete image uplading functioality
+
+1. see imaage will be uploaded on some cloud so we are using Firebase for this
+
+> TILL YET WE HAVE USED 2 SERVICES OF FIREBASE OF AUTH AND STORAGE
+
+for using firebase for storage 
+- first login in firebase with gmail
+- select your project in console
+- on left menu db and stroage -> storage
+- 
+
+```bash
+                                            1. SELECT
+                                        User selects image
+                                                ↓
+                                            2. STATE
+                                            setFile(file)
+                                                    ↓
+                                            3. UPLOAD
+                                            Firebase Storage
+                                                    ↓
+                                            4. PROGRESS
+                                            0% → 100%
+                                                    ↓
+                                            5. URL
+                                            Firebase downloadURL
+                                                    ↓
+                                            formData.avatar
+                                                    ↓
+                                            Display image
+```
+
+IMAGE UPLOAD
+│
+├─ 1. useRef
+│ → access hidden file input
+│
+├─ 2. File input
+│ → get File object
+│
+├─ 3. setFile()
+│ → store selected file
+│
+├─ 4. useEffect()
+│ → detect file change
+│
+├─ 5. Firebase Storage
+│ → store actual image
+│
+├─ 6. uploadBytesResumable()
+│ → upload + progress
+│
+├─ 7. state_changed
+│ → progress / error / complete
+│
+├─ 8. getDownloadURL()
+│ → obtain image URL
+│
+├─ 9. formData.avatar
+│ → hold URL
+│
+└─ 10. Backend + MongoDB
+→ persist URL with user
+
+2. upload the image to Firebase Storage using a resumable upload
+3. track its progress through state_changed,
+4. retrieve the resulting download URL, and
+5. persist that URL as the user's avatar rather than storing the binary image in MongoDB
