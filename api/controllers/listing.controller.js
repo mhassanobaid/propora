@@ -3,7 +3,6 @@ import ErrorHandler from "../utils/errorHandler.js";
 import catchAsyncErrors from "../middlewares/catchAsyncErrors.js";
 
 export const createListing = catchAsyncErrors(async (req, res, next) => {
-
   const {
     name,
     description,
@@ -83,5 +82,30 @@ export const deleteListing = catchAsyncErrors(async (req, res, next) => {
   return res.status(200).json({
     success: true,
     message: `Listing of ${listingIdToDel} deleted SUCCESSFULLY`,
+  });
+});
+
+export const updateListing = catchAsyncErrors(async (req, res, next) => {
+  const listing = await Listing.findById(req.params.id);
+
+  if (!listing) {
+    return next(new ErrorHandler(`Listing of ${req.params.id} Not Found`, 404));
+  }
+
+  if (req.user.id !== listing.userRef.toString()) {
+    return next(new ErrorHandler("You can only update your own listings!", 401));
+  }
+
+  const updatedListing = await Listing.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    {
+      new: true,
+    },
+  );
+
+  return res.status(200).json({
+    success: true,
+    listing: updatedListing,
   });
 });
