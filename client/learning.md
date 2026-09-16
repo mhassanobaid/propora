@@ -596,3 +596,15 @@ router.route("/api/v1/listings").post(isUserAuthenticated, createListing);
 2. create CreateListing RFC under proteeced routes in app.jsx
 3. when ceating UI, adopt mobile first approach while writing tailwind css
 4. id attribute helps to track changes in inputs in form
+
+#### complee functinaity of craete listing
+1. use type= button for upload of images so that overall form dont get sbmitted
+2. we are going to have more than one asyc beahaviour so need to wait for ALL of them
+they should be stored one by one so we have to return more than promise
+prmises length would be equal to length of files state array length
+3. for each file call storeImage function that wil be async as it will be uploading to cloud so 
+4. progress is not required but preview of image is required 
+5. use Promise.all and use imgUrls as specific key in formData while for other ids will be used as id of state
+6. add error and null for image uploading 
+7. delete for image preview will also be of type=button not submit
+8. make delete funciton of preview of images to be callback function in order to prevent from automatic submission
