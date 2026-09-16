@@ -1,4 +1,5 @@
 import catchAsyncErrors from "../middlewares/catchAsyncErrors.js";
+import Listing from "../models/listing.model.js";
 import User from "../models/user.model.js";
 import ErrorHandler from "../utils/errorHandler.js";
 
@@ -58,4 +59,17 @@ export const deleteUser = catchAsyncErrors(async (req, res, next) => {
     success: true,
     message: `User of ${req.params.id} deleted successfully`,
   });
+});
+
+export const getUserListings = catchAsyncErrors(async (req, res, next) => {
+  if (req.user.id === req.params.id) {
+    const listings = await Listing.find({ userRef: req.params.id });
+    res.status(200).json({
+      success: true,
+      listings_count: listings.length,
+      listings: listings,
+    });
+  } else {
+    return next(new ErrorHandler(401, "You can only view your own listings!"));
+  }
 });
