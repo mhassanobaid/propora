@@ -778,7 +778,7 @@ localhost:8000?searchTem='moden'&type='all'
 req.query.searchTerm
 req.query.type
 
-_`Engineering JUDGEMENT` _
+_`Engineering JUDGEMENT` if postman or insomnia is not there then use beolow_
 
 ┌──────────────────────────────────────────────┐
 │              CURL CRUD CHEATSHEET            │
@@ -804,3 +804,18 @@ _`Engineering JUDGEMENT` _
 │ curl -X DELETE "URL/ID"                     │
 │                                              │
 └──────────────────────────────────────────────┘
+
+curl "http://localhost:3000/api/v1/listings/index" -o listings.json
+
+3. 
+> In Express, put static/specific routes before /:id routes because Express matches routes in order.
+
+
+#### complete search functon
+
+1. insight is that when search box is changed and typed and clickde search icon then url should have that term
+2. input of search is enclosed in form and search icon is enclosed in button tag
+3. useParams was used when specific listing had to be viewed
+4. from react-router-dom Link and useNavigate are extracted
+5. URLSeachParams is being used here so that in order to maintain url and can extract query params from it
+6. 
