@@ -590,3 +590,9 @@ router.route("api/v1/listings").post(isUserAuthenticated, createListing);
 ^ WRONG
 router.route("/api/v1/listings").post(isUserAuthenticated, createListing);
 ^ RGHT
+
+#### UI of create listing
+1. have to make moble resonse
+2. create CreateListing RFC under proteeced routes in app.jsx
+3. when ceating UI, adopt mobile first approach while writing tailwind css
+4. id attribute helps to track changes in inputs in form
