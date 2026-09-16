@@ -5,6 +5,7 @@ import {
   updateUserProfile,
   deleteUser,
   getUserListings,
+  getUser,
 } from "../controllers/user.controller.js";
 
 const router = express.Router();
@@ -16,5 +17,7 @@ router.route("/update/:id").put(isAuthenticatedUser, updateUserProfile);
 router.route("/delete/:id").delete(isAuthenticatedUser, deleteUser);
 
 router.get("/:id/listings", isAuthenticatedUser, getUserListings);
+
+router.get("/:id", isAuthenticatedUser, getUser);
 
 export default router;

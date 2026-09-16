@@ -21,6 +21,8 @@ import {
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import { useSelector } from 'react-redux';
+import Contact from '../components/Contact';
 
 export default function Listing() {
   const { listingId } = useParams();
@@ -40,6 +42,8 @@ export default function Listing() {
   // This allows the details to remain visible
   // even when placeholder URLs are broken.
   const [failedImages, setFailedImages] = useState([]);
+  const { currentUser } = useSelector((state) => state.user);
+  const [contact, setContact] = useState(false);
 
   // ================================
   // FETCH LISTING
@@ -426,7 +430,7 @@ export default function Listing() {
             STATUS INFORMATION
             ================================= */}
 
-        <div className="flex flex-wrap gap-3 pb-5">
+        <div className="flex flex-col gap-3 pb-5">
           <span
             className="inline-flex items-center gap-2
                            bg-green-50 text-green-700
@@ -446,6 +450,15 @@ export default function Listing() {
               Special offer
             </span>
           )}
+          {currentUser && listing.userRef !== currentUser._id && !contact && (
+            <button
+              onClick={() => setContact(true)}
+              className="bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 p-3"
+            >
+              Contact landlord
+            </button>
+          )}
+          {contact && <Contact listing={listing} />}
         </div>
       </div>
     </main>
