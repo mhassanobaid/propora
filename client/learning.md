@@ -608,3 +608,99 @@ prmises length would be equal to length of files state array length
 6. add error and null for image uploading 
 7. delete for image preview will also be of type=button not submit
 8. make delete funciton of preview of images to be callback function in order to prevent from automatic submission
+9. temprarily using image url as firebase is not configured and requiring payasyou go 
+
+Conditional required
+required: function () {
+  return this.someField === true;
+}
+
+Meaning:
+
+Make this field required only when another field satisfies a condition.
+
+Example:
+
+discountPrice: {
+  type: Number,
+  required: function () {
+    return this.offer === true;
+  }
+}
+offer	discountPrice required?
+false	❌ No
+true	✅ Yes
+Mongoose validator
+validate: {
+  validator: function (value) {
+    return CONDITION;
+  },
+  message: "Error message",
+}
+
+Remember:
+
+value → current field's value
+this → current Mongoose document
+
+So:
+
+value
+
+→ discountPrice
+
+this.offer
+
+→ current listing's offer
+
+this.regularPrice
+
+→ current listing's regularPrice
+
+The magic line
+return !this.offer || value <= this.regularPrice;
+
+Translate it mentally as:
+
+No offer OR discount price is valid.
+
+3 scenarios to memorize
+offer: false
+discountPrice: undefined
+
+✅ Valid
+
+offer: true
+regularPrice: 1000
+discountPrice: 800
+
+✅ Valid
+
+offer: true
+regularPrice: 1000
+discountPrice: 1200
+
+❌ Invalid
+
+⭐ One-line interview answer
+
+If interviewer asks “How do you conditionally make a Mongoose field required?”
+
+“I use a function for the required validator and return a condition based on another field. For example, required: function() { return this.offer === true; } makes discountPrice mandatory only when the listing has an offer.”
+
+🔑 Final mental shortcut
+required
+   ↓
+"DO I NEED THIS FIELD?"
+
+validate
+   ↓
+"IF I HAVE IT, IS ITS VALUE VALID?"
+
+this
+   ↓
+"CURRENT DOCUMENT"
+
+value
+   ↓
+"CURRENT FIELD'S VALUE"

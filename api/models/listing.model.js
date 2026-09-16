@@ -33,11 +33,16 @@ const listingSchema = new mongoose.Schema(
 
     discountPrice: {
       type: Number,
-      required: [true, "Discount price is required"],
+
+      required: function () {
+        return this.offer === true;
+      },
+
       min: [0, "Discount price cannot be negative"],
+
       validate: {
         validator: function (value) {
-          return value <= this.regularPrice;
+          return !this.offer || value <= this.regularPrice;
         },
         message: "Discount price cannot be greater than regular price",
       },
