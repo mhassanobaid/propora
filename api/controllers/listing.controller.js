@@ -93,7 +93,9 @@ export const updateListing = catchAsyncErrors(async (req, res, next) => {
   }
 
   if (req.user.id !== listing.userRef.toString()) {
-    return next(new ErrorHandler("You can only update your own listings!", 401));
+    return next(
+      new ErrorHandler("You can only update your own listings!", 401),
+    );
   }
 
   const updatedListing = await Listing.findByIdAndUpdate(
@@ -107,5 +109,18 @@ export const updateListing = catchAsyncErrors(async (req, res, next) => {
   return res.status(200).json({
     success: true,
     listing: updatedListing,
+  });
+});
+
+export const showListing = catchAsyncErrors(async (req, res, next) => {
+  const listing = await Listing.findById(req.params.id);
+
+  if (!listing) {
+    return next(new ErrorHandler(`Listing of ${req.params.id} Not Found`, 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    listing: listing,
   });
 });

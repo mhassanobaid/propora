@@ -4,6 +4,7 @@ import {
   createListing,
   deleteListing,
   updateListing,
+  showListing,
 } from "../controllers/listing.controller.js";
 
 const router = express.Router();
@@ -13,6 +14,7 @@ router.route("/create").post(isAuthenticatedUser, createListing);
 router
   .route("/:id")
   .delete(isAuthenticatedUser, deleteListing)
-  .put(isAuthenticatedUser, updateListing);
+  .put(isAuthenticatedUser, updateListing)
+  .get(showListing);
 
 export default router;
