@@ -819,3 +819,23 @@ curl "http://localhost:3000/api/v1/listings/index" -o listings.json
 4. from react-router-dom Link and useNavigate are extracted
 5. URLSeachParams is being used here so that in order to maintain url and can extract query params from it
 6. 
+
+#### create search page
+
+1. non protecte
+
+#### add fucntionality to search page means by selecting filters url be change
+
+2. handleChange would be versatile because we have boolearn, text and value(searchTerm)
+3. after entering all filters and clicking submit
+- form should be sumbitted
+- url be changed
+- but existing filters of header should retain in url
+**-> Solu **
+-> first build url from sidebarFormData of search page and then call api
+-> it will resolve issue that when searchTerm of form changes then header is also changed
+-> BUT PROBLEM is that header when submitted does not change searchTerm of form of UI of Search now unto it SOLU is USEEFFECT that whenver widn.location changes then set search page state ---> it will result in behaiour that URL CHANGES WIL CHANGE UI OF SEARCH FILTER FORM aND within the same useeffect that is detecting location.search call api of search and get listing having APPLIED FILTERS
+
+TWO WAY EFFECT IMPLEMNTED
+4. use onSubmit listener on form
+
