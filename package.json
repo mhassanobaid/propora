@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node api/server.js",
     "dev": "nodemon api/server.js",
-    "seed:listings": "node api/seed/seedListings.js"
+    "seed:listings": "node api/seed/seedListings.js",
+    "build": "npm install && npm install --prefix client && npm run build --prefix client"
   },
   "repository": {
     "type": "git",

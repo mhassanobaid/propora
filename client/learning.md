@@ -853,3 +853,49 @@ _`Engineering JUDGEMENT` Whenever config changes of tailwind or anything restart
 so but in show more we will pass it and logic is simple that since 9 have arrived means from 
 0 to 8 so next time starting index will be equal to length so startingIndex become 9 and after fetching  9 more then length will become 18 and then next time it will become 18
 3. 
+
+
+#### deploying on REnder
+
+```text
+app.get('*', ...) is a catch-all GET route/fallback route. It handles GET requests that haven't been matched by previous routes and serves the React application's index.html. This allows client-side routing with React Router to work when the user directly accesses frontend routes.
+
+And:
+
+path.join(__dirname, 'client', 'dist', 'index.html')
+
+constructs the platform-safe absolute filesystem path to the production React build's index.html.
+
+And:
+
+res.sendFile(...)
+
+sends that file as the HTTP response.
+
+10. Memorize this
+
+Just remember:
+
+app.get('*')
+      ↓
+"Any unmatched GET request"
+      ↓
+sendFile()
+      ↓
+React index.html
+      ↓
+React takes over
+
+Or the shortest interview answer:
+
+app.get('*') is a catch-all fallback route that serves React's index.html for unmatched GET requests, enabling client-side routing in a deployed MERN application
+```
+
+
+1. chnage package of do npm install in be and then npm install in fe and then do npm run build in fe
+2. after build there is folder in client which is DIST 
+client/dist
+then run that DIST by our backend
+3. deployment steps on new->Web service->load from github->connect repo->
+                                                                        name -> region -> branch `main` -> rootdirectoy (empty)-> runtime (node) -> build command (npm run build) `This command will run package jsons's script command of build for us` -> start command `npm start` -> plan -> advanced (add env variale ) `ADD BOTH OF FE AND BE` -> Cretate wen service
+
