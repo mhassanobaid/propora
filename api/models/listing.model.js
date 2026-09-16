@@ -83,7 +83,7 @@ const listingSchema = new mongoose.Schema(
 
     offer: {
       type: Boolean,
-      required: [true, "Offer status is required"],
+      optional: true,
       default: false,
     },
 

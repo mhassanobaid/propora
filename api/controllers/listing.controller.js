@@ -3,7 +3,6 @@ import ErrorHandler from "../utils/errorHandler.js";
 import catchAsyncErrors from "../middlewares/catchAsyncErrors.js";
 
 export const createListing = catchAsyncErrors(async (req, res, next) => {
-  console.log("ASDAAAAAAAAASDDDDDDDDDDDDASDASDASDASD");
 
   const {
     name,
@@ -26,7 +25,6 @@ export const createListing = catchAsyncErrors(async (req, res, next) => {
     !description ||
     !address ||
     regularPrice === undefined ||
-    discountPrice === undefined ||
     bathrooms === undefined ||
     bedrooms === undefined ||
     furnished === undefined ||
@@ -60,5 +58,30 @@ export const createListing = catchAsyncErrors(async (req, res, next) => {
     success: true,
     message: "Listing created successfully",
     listing,
+  });
+});
+
+export const deleteListing = catchAsyncErrors(async (req, res, next) => {
+  const listingIdToDel = req.params.id;
+
+  const listing = await Listing.findById(listingIdToDel);
+
+  if (!listing) {
+    return next(
+      new ErrorHandler(`Listing of ${listingIdToDel} Not Found`, 404),
+    );
+  }
+
+  if (!listing.userRef.equals(req.user.id)) {
+    return next(
+      new ErrorHandler("You can only delete your own listings!", 401),
+    );
+  }
+
+  await listing.deleteOne();
+
+  return res.status(200).json({
+    success: true,
+    message: `Listing of ${listingIdToDel} deleted SUCCESSFULLY`,
   });
 });

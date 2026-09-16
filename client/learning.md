@@ -709,3 +709,24 @@ value
 
 1. Alaway use key in map for better react rendering
 2. 
+
+#### delete users listing
+1. always remember
+```js
+if (!listing.userRef.equals(req.user.id)) {
+
+    or
+
+
+    if (req.user.id != listing.userRef.toString())) {
+```
+
+2. why callback in order to prevent from running functon without click
+
+```js
+onClick={() => handleListingDelete(listing._id)}
+```
+
+3. never write findById({})
+inseaad write findById(id)
+
