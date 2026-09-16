@@ -839,3 +839,9 @@ curl "http://localhost:3000/api/v1/listings/index" -o listings.json
 TWO WAY EFFECT IMPLEMNTED
 4. use onSubmit listener on form
 
+
+#### creating card of listing to show after searching in Search Page
+1. installtailwind-line-clamp to resirct desc to 2 line
+
+_`Engineering JUDGEMENT` Whenever config changes of tailwind or anything restart server_
+
