@@ -571,3 +571,22 @@ _`Engineering JUDGEMENT`Yes for EACH functionality we keep on ading reducers lik
    `SIMILAR TO DELETE USER`
 2. again since it is new fucntinaity to `User` resource so have reducers of it
    in userSlice
+
+#### LISING API (Antoher resource)
+1. start with       M                       odel
+2. then             C                       ontroller Action
+3. then             R                       oute
+4. then include Route in App.jsx
+5. buildng create route of lsting
+6. we can ceate custom validtor using
+```js
+ validate: {
+    validator : (urls)=>urls.length>0,
+    message: "urls must be greater than 0"
+ }
+```
+7. never miss / in writing routes 
+router.route("api/v1/listings").post(isUserAuthenticated, createListing);
+^ WRONG
+router.route("/api/v1/listings").post(isUserAuthenticated, createListing);
+^ RGHT

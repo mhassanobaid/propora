@@ -12,9 +12,11 @@ app.use(cookieParser());
 // routes import
 import userRoutes from "./routes/user.route.js";
 import authRoutes from "./routes/auth.route.js";
+import listingRoutes from "./routes/listing.route.js";
 
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/", authRoutes);
+app.use("/api/v1/listings", listingRoutes);
 
 app.use(errorMiddleware);
 
