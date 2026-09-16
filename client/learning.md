@@ -898,4 +898,6 @@ client/dist
 then run that DIST by our backend
 3. deployment steps on new->Web service->load from github->connect repo->
                                                                         name -> region -> branch `main` -> rootdirectoy (empty)-> runtime (node) -> build command (npm run build) `This command will run package jsons's script command of build for us` -> start command `npm start` -> plan -> advanced (add env variale ) `ADD BOTH OF FE AND BE` -> Cretate wen service
+4. firebase oauth login will not work after deployment so solu is loginin firebase and go to authorisation->settings->authorized domains->add domain of render provided
 
+_`Engineering JUDGEMENT` ALWAYS ENTER ENV OF BOTH BE AND FE in env while deploying_
