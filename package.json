@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "node api/server.js",
-    "dev": "nodemon api/server.js"
+    "dev": "nodemon api/server.js",
+    "seed:listings": "node api/seed/seedListings.js"
   },
   "repository": {
     "type": "git",

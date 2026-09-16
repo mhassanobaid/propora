@@ -845,3 +845,11 @@ TWO WAY EFFECT IMPLEMNTED
 
 _`Engineering JUDGEMENT` Whenever config changes of tailwind or anything restart server_
 
+
+#### show mroe
+
+1. REsearch whn onClick we pass callback fnctions and whn just function name
+2. point is that since for query all listing we pass startingIndex as well no we are not passing
+so but in show more we will pass it and logic is simple that since 9 have arrived means from 
+0 to 8 so next time starting index will be equal to length so startingIndex become 9 and after fetching  9 more then length will become 18 and then next time it will become 18
+3. 
