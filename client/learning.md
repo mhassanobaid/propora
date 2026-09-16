@@ -764,3 +764,43 @@ Can transform items using a second argument.
 Does not magically convert every object into an array.
 
 Mnemonic: FROM = "Make an Array FROM this collection.
+
+#### search the listing
+
+1. rememeber that undefined is written as undefined or 'undefined'
+2. we are applying seaching as if given then search that one else include all subvariants of variant
+means if offer is not given then 
+means 
+undefined(nhn select kee) so include listings of both offer as well as non offered
+or false(chorr dee) so include listings of both offer as well as non offered
+
+localhost:8000?searchTem='moden'&type='all'
+req.query.searchTerm
+req.query.type
+
+_`Engineering JUDGEMENT` _
+
+┌──────────────────────────────────────────────┐
+│              CURL CRUD CHEATSHEET            │
+├──────────────────────────────────────────────┤
+│                                              │
+│ CREATE                                       │
+│ curl -X POST "URL"                           │
+│   -H "Content-Type: application/json"        │
+│   -d '{"field":"value"}'                     │
+│                                              │
+│ READ                                         │
+│ curl "URL"                                   │
+│                                              │
+│ READ ONE                                     │
+│ curl "URL/ID"                                │
+│                                              │
+│ UPDATE                                       │
+│ curl -X PUT "URL/ID"                         │
+│   -H "Content-Type: application/json"        │
+│   -d '{"field":"newValue"}'                 │
+│                                              │
+│ DELETE                                       │
+│ curl -X DELETE "URL/ID"                     │
+│                                              │
+└──────────────────────────────────────────────┘

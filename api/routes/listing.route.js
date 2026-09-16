@@ -5,6 +5,7 @@ import {
   deleteListing,
   updateListing,
   showListing,
+  getListings,
 } from "../controllers/listing.controller.js";
 
 const router = express.Router();
@@ -16,5 +17,7 @@ router
   .delete(isAuthenticatedUser, deleteListing)
   .put(isAuthenticatedUser, updateListing)
   .get(showListing);
+
+router.route("/index").get(getListings);
 
 export default router;
