@@ -20,9 +20,29 @@ app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/", authRoutes);
 app.use("/api/v1/listings", listingRoutes);
 
-app.use(express.static(path.join(__dirname, "/client/dist")));
+const clientDistPath = path.join(__dirname, "client", "dist");
 
-path.join(__dirname, "client", "dist", "index.html");
+import fs from "fs";
+
+console.log("Client path:", clientDistPath);
+
+console.log(
+  "Index exists:",
+  fs.existsSync(path.join(clientDistPath, "index.html")),
+);
+
+app.use(express.static(clientDistPath));
+
+// React fallback
+app.use((req, res, next) => {
+  if (req.originalUrl.startsWith("/api")) {
+    return next();
+  }
+
+  res.sendFile(path.join(clientDistPath, "index.html"), (err) => {
+    if (err) next(err);
+  });
+});
 
 app.use(errorMiddleware);
 
