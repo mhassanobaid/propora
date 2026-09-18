@@ -35,6 +35,9 @@ export default function CreateListing() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const paymentLabel =
+    formData.type === 'rent' ? '$ / month' : '$ one-time payment';
+
   useEffect(() => {
     return () => {
       files.forEach(({ preview }) => {
@@ -392,9 +395,7 @@ export default function CreateListing() {
               <div className="flex flex-col items-center">
                 <label htmlFor="regularPrice">Regular price</label>
 
-                {formData.type === 'rent' && (
-                  <span className="text-xs">($ / month)</span>
-                )}
+                <span className="text-xs">{paymentLabel}</span>
               </div>
             </div>
 
@@ -415,9 +416,7 @@ export default function CreateListing() {
                 <div className="flex flex-col items-center">
                   <label htmlFor="discountPrice">Discounted price</label>
 
-                  {formData.type === 'rent' && (
-                    <span className="text-xs">($ / month)</span>
-                  )}
+                  <span className="text-xs">{paymentLabel}</span>
                 </div>
               </div>
             )}
