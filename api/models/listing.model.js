@@ -91,9 +91,14 @@ const listingSchema = new mongoose.Schema(
       type: [String],
       required: [true, "At least one image is required"],
       validate: {
-        validator: (urls) => urls.length > 0,
+        validator: (urls) => Array.isArray(urls) && urls.length > 0,
         message: "At least one image is required",
       },
+    },
+
+    imagePublicIds: {
+      type: [String],
+      default: [],
     },
 
     userRef: {

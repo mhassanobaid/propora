@@ -144,18 +144,36 @@ export default function Listing() {
   };
 
   // ================================
-  // PRICE FORMATTING
+  // PRICE CALCULATIONS
   // ================================
 
   const regularPrice = Number(listing.regularPrice || 0);
   const discountPrice = Number(listing.discountPrice || 0);
 
+  const hasOffer =
+    listing.offer &&
+    regularPrice > 0 &&
+    discountPrice > 0 &&
+    discountPrice < regularPrice;
+
+  // Amount saved
+  const savings = hasOffer ? regularPrice - discountPrice : 0;
+
+  // Discount percentage
+  const discountPercentage = hasOffer
+    ? Math.round((savings / regularPrice) * 100)
+    : 0;
+
+  // Prices
   const formattedRegularPrice = regularPrice.toLocaleString('en-US');
 
   const formattedDiscountPrice = discountPrice.toLocaleString('en-US');
 
-  // Calculate savings only for offers.
-  const savings = regularPrice - discountPrice;
+  const formattedSavings = savings.toLocaleString('en-US');
+
+  // Payment label
+  const paymentLabel =
+    listing.type === 'rent' ? 'per month' : 'one-time payment';
 
   // ================================
   // JSX
@@ -275,49 +293,186 @@ export default function Listing() {
         </div>
 
         {/* =================================
-            PRICE CARD
-            ================================= */}
+    PRICE CARD
+    ================================= */}
 
-        <div className="rounded-xl border bg-white p-4 sm:p-5">
-          <p
-            className="text-xs uppercase tracking-wide
-                        text-slate-500 font-semibold"
+        <section
+          className="rounded-2xl border border-slate-200
+             bg-white p-5 sm:p-6 shadow-sm"
+        >
+          {/* Card Header */}
+          <div
+            className="flex flex-wrap items-center
+                  justify-between gap-3"
           >
-            {listing.type === 'rent' ? 'Monthly Price' : 'Property Price'}
-          </p>
+            <div>
+              <p
+                className="text-xs font-semibold uppercase
+                   tracking-wider text-slate-500"
+              >
+                {listing.type === 'rent' ? 'Monthly Rent' : 'Property Price'}
+              </p>
 
-          <div className="flex flex-wrap items-baseline gap-3 mt-1">
-            <p
-              className="text-3xl sm:text-4xl font-bold
-                          text-slate-800"
-            >
-              ${listing.offer ? formattedDiscountPrice : formattedRegularPrice}
-            </p>
+              <p className="text-xs text-slate-400 mt-1">
+                {listing.type === 'rent'
+                  ? 'Rental payment'
+                  : 'One-time property payment'}
+              </p>
+            </div>
 
-            {listing.type === 'rent' && (
-              <span className="text-sm text-slate-500">/ month</span>
+            {/* Discount Badge */}
+            {hasOffer && (
+              <span
+                className="inline-flex items-center gap-1
+                   rounded-full bg-green-100
+                   px-3 py-1.5 text-xs font-bold
+                   text-green-700"
+              >
+                <FaTag />
+                {discountPercentage}% OFF
+              </span>
             )}
           </div>
 
-          {/* Show regular price and savings only with offer. */}
+          {/* Final Price */}
+          <div className="mt-5">
+            <p className="text-xs font-medium text-slate-500">
+              {hasOffer ? 'Price after discount' : 'Current price'}
+            </p>
 
-          {listing.offer && (
-            <div className="flex flex-wrap items-center gap-2 mt-2">
-              <span className="text-sm text-slate-400 line-through">
-                ${formattedRegularPrice}
-              </span>
-
-              <span
-                className="inline-flex items-center gap-1
-                             text-sm font-semibold
-                             text-green-700"
+            <div
+              className="flex flex-wrap items-baseline
+                    gap-2 mt-1"
+            >
+              <p
+                className={`text-3xl sm:text-4xl font-bold
+                    tracking-tight ${
+                      hasOffer ? 'text-green-700' : 'text-slate-800'
+                    }`}
               >
-                <FaTag />
-                Save ${savings.toLocaleString('en-US')}
-              </span>
+                ${hasOffer ? formattedDiscountPrice : formattedRegularPrice}
+              </p>
+
+              {listing.type === 'rent' && (
+                <span className="text-sm text-slate-500">/ month</span>
+              )}
+            </div>
+
+            <p className="text-xs text-slate-500 mt-1">
+              {hasOffer
+                ? listing.type === 'rent'
+                  ? 'Final monthly rent'
+                  : 'Final property price'
+                : paymentLabel}
+            </p>
+          </div>
+
+          {/* Offer Breakdown */}
+          {hasOffer && (
+            <div
+              className="mt-5 pt-4 border-t
+                 border-slate-100 space-y-4"
+            >
+              {/* Original Price */}
+              <div
+                className="flex items-center
+                   justify-between gap-3"
+              >
+                <span className="text-sm text-slate-500">Regular price</span>
+
+                <span
+                  className="text-sm text-slate-400
+                     line-through"
+                >
+                  ${formattedRegularPrice}
+                  {listing.type === 'rent' && (
+                    <span className="no-underline"> / month</span>
+                  )}
+                </span>
+              </div>
+
+              {/* Savings Amount */}
+              <div
+                className="flex items-center
+                   justify-between gap-3"
+              >
+                <span className="text-sm text-slate-500">You save</span>
+
+                <span
+                  className="text-sm font-semibold
+                     text-green-700"
+                >
+                  ${formattedSavings}
+                </span>
+              </div>
+
+              {/* Discount Percentage */}
+              <div
+                className="flex items-center
+                   justify-between gap-3"
+              >
+                <span className="text-sm text-slate-500">Owner's discount</span>
+
+                <span
+                  className="text-sm font-bold
+                     text-green-700"
+                >
+                  {discountPercentage}% off
+                </span>
+              </div>
+
+              {/* Final Price Summary */}
+              <div
+                className="rounded-xl border
+                   border-green-100
+                   bg-green-50 p-4"
+              >
+                <div
+                  className="flex flex-wrap items-center
+                     justify-between gap-2"
+                >
+                  <span
+                    className="text-sm font-semibold
+                       text-green-800"
+                  >
+                    Your payable price
+                  </span>
+
+                  <span
+                    className="text-lg sm:text-xl
+                       font-bold text-green-700"
+                  >
+                    ${formattedDiscountPrice}
+                  </span>
+                </div>
+
+                <p className="text-xs text-green-700 mt-2">
+                  {listing.type === 'rent'
+                    ? 'Amount payable every month'
+                    : 'Amount payable for the property'}
+                </p>
+              </div>
+
+              {/* Negotiation Hint */}
+              <p className="text-xs leading-5 text-slate-500">
+                This is the owner's current offer. You may discuss additional
+                discounts with the owner after contacting them.
+              </p>
             </div>
           )}
-        </div>
+
+          {/* No Offer */}
+          {!hasOffer && (
+            <div
+              className="mt-4 rounded-lg
+                 bg-slate-50 p-3"
+            >
+              <p className="text-xs text-slate-500">
+                No discount currently offered by the owner.
+              </p>
+            </div>
+          )}
+        </section>
 
         {/* =================================
             DESCRIPTION

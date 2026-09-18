@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 // import {
 //   getDownloadURL,
 //   getStorage,
@@ -17,7 +17,6 @@ export default function CreateListing() {
   const [files, setFiles] = useState([]);
 
   const [formData, setFormData] = useState({
-    imageUrls: [],
     name: '',
     description: '',
     address: '',
@@ -36,6 +35,14 @@ export default function CreateListing() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    return () => {
+      files.forEach(({ preview }) => {
+        URL.revokeObjectURL(preview);
+      });
+    };
+  }, []);
+
   // --------------------------------------------------
   // Generic form handler
   // --------------------------------------------------
@@ -52,75 +59,6 @@ export default function CreateListing() {
   // --------------------------------------------------
   // Temporary image upload
   // --------------------------------------------------
-
-  const handleImageSubmit = async (e) => {
-    e.preventDefault();
-
-    if (files.length === 0) {
-      setImageUploadError('Please select at least one image');
-      return;
-    }
-
-    if (files.length + formData.imageUrls.length > 6) {
-      setImageUploadError('You can only upload 6 images per listing');
-      return;
-    }
-
-    // 2 MB per image
-    const hasLargeFile = files.some((file) => file.size > 2 * 1024 * 1024);
-
-    if (hasLargeFile) {
-      setImageUploadError('Each image must be smaller than 2 MB');
-      return;
-    }
-
-    try {
-      setUploading(true);
-      setImageUploadError('');
-
-      /*
-      ==================================================
-      FUTURE FIREBASE IMPLEMENTATION
-      ==================================================
-
-      const promises = [];
-
-      for (let i = 0; i < files.length; i++) {
-        promises.push(storeImage(files[i]));
-      }
-
-      const urls = await Promise.all(promises);
-
-      setFormData((prev) => ({
-        ...prev,
-        imageUrls: [...prev.imageUrls, ...urls],
-      }));
-
-      ==================================================
-      */
-
-      // -----------------------------------------------
-      // TEMPORARY IMPLEMENTATION
-      // -----------------------------------------------
-
-      // Dummy URL because Firebase is not configured yet.
-      // This allows your backend model's imageUrls
-      // validation to pass.
-
-      const dummyUrls = files.map(() => 'https://placehold.co/600x400');
-
-      setFormData((prev) => ({
-        ...prev,
-        imageUrls: [...prev.imageUrls, ...dummyUrls],
-      }));
-
-      setFiles([]);
-    } catch (err) {
-      setImageUploadError('Image upload failed');
-    } finally {
-      setUploading(false);
-    }
-  };
 
   /*
   ==================================================
@@ -178,58 +116,79 @@ export default function CreateListing() {
   // Remove image
   // --------------------------------------------------
 
-  const handleRemoveImage = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      imageUrls: prev.imageUrls.filter((_, i) => i !== index),
-    }));
-  };
-
   // --------------------------------------------------
   // Create listing
   // --------------------------------------------------
+
+  const handleRemoveImage = (index) => {
+    setFiles((prev) => {
+      const fileToRemove = prev[index];
+
+      URL.revokeObjectURL(fileToRemove.preview);
+
+      return prev.filter((_, i) => i !== index);
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
       setError('');
+      setImageUploadError('');
 
-      // Model requires at least one image
-      if (formData.imageUrls.length < 1) {
-        setError('You must upload at least one image');
+      // Validate images
+      if (files.length === 0) {
+        setError('Please select at least one image');
         return;
       }
 
-      // Model validation:
-      // discountPrice <= regularPrice
-      if (Number(formData.discountPrice) > Number(formData.regularPrice)) {
+      if (files.length > 6) {
+        setError('You can only upload 6 images per listing');
+        return;
+      }
+
+      const hasLargeFile = files.some(
+        ({ file }) => file.size > 2 * 1024 * 1024,
+      );
+
+      if (hasLargeFile) {
+        setError('Each image must be smaller than 2 MB');
+        return;
+      }
+
+      // Validate discount price
+      if (
+        formData.offer &&
+        Number(formData.discountPrice) > Number(formData.regularPrice)
+      ) {
         setError('Discount price cannot be greater than regular price');
         return;
       }
 
       setLoading(true);
 
-      const listingData = {
-        ...formData,
+      // Create multipart form data
+      const listingFormData = new FormData();
 
-        // Convert HTML input strings into numbers
-        regularPrice: Number(formData.regularPrice),
-        discountPrice: formData.offer
-          ? Number(formData.discountPrice)
-          : undefined,
-        bedrooms: Number(formData.bedrooms),
-        bathrooms: Number(formData.bathrooms),
-      };
+      // Add text and boolean fields
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key === 'discountPrice' && !formData.offer) {
+          return;
+        }
+
+        listingFormData.append(key, value);
+      });
+
+      // Add images
+      files.forEach(({ file }) => {
+        listingFormData.append('images', file);
+      });
 
       const res = await fetch('/api/v1/listings/create', {
         method: 'POST',
-
-        headers: {
-          'Content-Type': 'application/json',
-        },
-
-        body: JSON.stringify(listingData),
+        credentials: 'include',
+        body: listingFormData,
       });
 
       const data = await res.json();
@@ -240,18 +199,6 @@ export default function CreateListing() {
       }
 
       console.log('Listing created:', data);
-
-      /*
-        Your controller returns:
-
-        {
-          success: true,
-          message: "...",
-          listing: {...}
-        }
-
-        Therefore:
-      */
 
       navigate(`/listing/${data.listing._id}`);
     } catch (err) {
@@ -489,7 +436,25 @@ export default function CreateListing() {
 
           <div className="flex gap-4">
             <input
-              onChange={(e) => setFiles(Array.from(e.target.files))}
+              onChange={(e) => {
+                const selectedFiles = Array.from(e.target.files || []);
+
+                if (files.length + selectedFiles.length > 6) {
+                  setImageUploadError('You can only select up to 6 images');
+                  return;
+                }
+
+                const filesWithPreview = selectedFiles.map((file) => ({
+                  file,
+                  preview: URL.createObjectURL(file),
+                }));
+
+                setFiles((prev) => [...prev, ...filesWithPreview]);
+                setImageUploadError('');
+
+                // Allow selecting the same file again if needed
+                e.target.value = '';
+              }}
               className="p-3 border border-gray-300 rounded w-full"
               type="file"
               id="images"
@@ -498,14 +463,10 @@ export default function CreateListing() {
               multiple
             />
 
-            <button
-              type="button"
-              disabled={uploading}
-              onClick={handleImageSubmit}
-              className="p-3 text-green-700 border border-green-700 rounded uppercase hover:shadow-lg disabled:opacity-80"
-            >
-              {uploading ? 'Uploading...' : 'Upload'}
-            </button>
+            <p className="text-sm text-gray-600">
+              Select up to 6 images. They will be uploaded when you create the
+              listing.
+            </p>
           </div>
 
           {/* Image error */}
@@ -514,22 +475,26 @@ export default function CreateListing() {
           )}
 
           {/* Uploaded images */}
-          {formData.imageUrls.length > 0 &&
-            formData.imageUrls.map((url, index) => (
+          {files.length > 0 &&
+            files.map(({ preview, file }, index) => (
               <div
-                key={`${url}-${index}`}
+                key={preview}
                 className="flex justify-between p-3 border items-center"
               >
                 <div className="flex items-center gap-3">
                   <img
-                    src={url}
+                    src={preview}
                     alt={`listing image ${index + 1}`}
-                    className="w-20 h-20 object-contain rounded-lg"
+                    className="w-20 h-20 object-cover rounded-lg"
                   />
 
-                  {index === 0 && (
-                    <span className="text-sm font-semibold">Cover</span>
-                  )}
+                  <div className="flex flex-col">
+                    {index === 0 && (
+                      <span className="text-sm font-semibold">Cover</span>
+                    )}
+
+                    <span className="text-xs text-gray-500">{file.name}</span>
+                  </div>
                 </div>
 
                 <button
@@ -545,7 +510,7 @@ export default function CreateListing() {
           {/* Create Listing */}
           <button
             type="submit"
-            disabled={loading || uploading}
+            disabled={loading}
             className="p-3 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80"
           >
             {loading ? 'Creating...' : 'Create Listing'}

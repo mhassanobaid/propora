@@ -14,8 +14,8 @@ export default function CreateListing() {
   const navigate = useNavigate();
   const params = useParams();
   const [files, setFiles] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
   const [formData, setFormData] = useState({
-    imageUrls: [],
     name: '',
     description: '',
     address: '',
@@ -33,93 +33,52 @@ export default function CreateListing() {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const paymentLabel =
+    formData.type === 'rent' ? '$ / month' : '$ one-time payment';
+
   useEffect(() => {
     const fetchListing = async () => {
-      const listingId = params.listingId;
-      const res = await fetch(`/api/v1/listings/${listingId}`);
-      const data = await res.json();
-      if (data.success === false) {
-        console.log(data.message);
-        return;
-      }
-      console.log('DATA.LISTING', data.listing);
+      try {
+        const res = await fetch(`/api/v1/listings/${params.listingId}`, {
+          credentials: 'include',
+        });
 
-      setFormData(data.listing);
+        const data = await res.json();
+
+        if (!data.success) {
+          setError(data.message);
+          return;
+        }
+
+        const listing = data.listing;
+
+        setFormData({
+          name: listing.name,
+          description: listing.description,
+          address: listing.address,
+          type: listing.type,
+          bedrooms: listing.bedrooms,
+          bathrooms: listing.bathrooms,
+          regularPrice: listing.regularPrice,
+          discountPrice: listing.discountPrice,
+          offer: listing.offer,
+          parking: listing.parking,
+          furnished: listing.furnished,
+        });
+
+        setExistingImages(
+          listing.imageUrls.map((url, index) => ({
+            url,
+            publicId: listing.imagePublicIds?.[index] || null,
+          })),
+        );
+      } catch (err) {
+        setError(err.message);
+      }
     };
 
     fetchListing();
-  }, []);
-
-  const handleImageSubmit = async (e) => {
-    console.log('FFFFFFFFFFFFFFFFFFFFILES', files);
-
-    e.preventDefault();
-
-    if (files.length === 0) {
-      setImageUploadError('Please select at least one image');
-      return;
-    }
-
-    if (files.length + formData.imageUrls.length > 6) {
-      setImageUploadError('You can only upload 6 images per listing');
-      return;
-    }
-
-    // 2 MB per image
-    const hasLargeFile = files.some((file) => file.size > 2 * 1024 * 1024);
-
-    if (hasLargeFile) {
-      setImageUploadError('Each image must be smaller than 2 MB');
-      return;
-    }
-
-    try {
-      setUploading(true);
-      setImageUploadError('');
-
-      /*
-      ==================================================
-      FUTURE FIREBASE IMPLEMENTATION
-      ==================================================
-
-      const promises = [];
-
-      for (let i = 0; i < files.length; i++) {
-        promises.push(storeImage(files[i]));
-      }
-
-      const urls = await Promise.all(promises);
-
-      setFormData((prev) => ({
-        ...prev,
-        imageUrls: [...prev.imageUrls, ...urls],
-      }));
-
-      ==================================================
-      */
-
-      // -----------------------------------------------
-      // TEMPORARY IMPLEMENTATION
-      // -----------------------------------------------
-
-      // Dummy URL because Firebase is not configured yet.
-      // This allows your backend model's imageUrls
-      // validation to pass.
-
-      const dummyUrls = files.map(() => 'https://placehold.co/600x400');
-
-      setFormData((prev) => ({
-        ...prev,
-        imageUrls: [...prev.imageUrls, ...dummyUrls],
-      }));
-
-      setFiles([]);
-    } catch (err) {
-      setImageUploadError('Image upload failed');
-    } finally {
-      setUploading(false);
-    }
-  };
+  }, [params.listingId]);
 
   //   const storeImage = async (file) => {
   //     return new Promise((resolve, reject) => {
@@ -146,12 +105,18 @@ export default function CreateListing() {
   //     });
   //   };
 
-  const handleRemoveImage = (index) => {
-    setFormData({
-      ...formData,
-      imageUrls: formData.imageUrls.filter((_, i) => i !== index),
+  const handleRemoveExistingImage = (index) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveNewImage = (index) => {
+    setFiles((prev) => {
+      const image = prev[index];
+
+      URL.revokeObjectURL(image.preview);
+
+      return prev.filter((_, i) => i !== index);
     });
-    console.log('FILES', files);
   };
 
   const handleChange = (e) => {
@@ -186,40 +151,58 @@ export default function CreateListing() {
   };
 
   const handleSubmit = async (e) => {
-    console.log(formData);
-
-    console.log(params.listingId);
-
     e.preventDefault();
+
+    if (existingImages.length + files.length < 1) {
+      setError('You must have at least one image');
+      return;
+    }
+
+    if (+formData.regularPrice < +formData.discountPrice) {
+      setError('Discount price must be lower than regular price');
+      return;
+    }
+
     try {
-      if (formData.imageUrls.length < 1)
-        return setError('You must upload at least one image');
-      if (+formData.regularPrice < +formData.discountPrice)
-        return setError('Discount price must be lower than regular price');
       setLoading(true);
       setError(false);
+
+      const dataToSend = new FormData();
+
+      // Text and numeric fields
+      Object.entries(formData).forEach(([key, value]) => {
+        dataToSend.append(key, value);
+      });
+
+      // Existing images that were NOT deleted
+      dataToSend.append('existingImages', JSON.stringify(existingImages));
+
+      // New image files
+      files.forEach(({ file }) => {
+        dataToSend.append('images', file);
+      });
+
       const res = await fetch(`/api/v1/listings/${params.listingId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          userRef: currentUser._id,
-        }),
+        credentials: 'include',
+        body: dataToSend,
       });
+
       const data = await res.json();
-      setLoading(false);
-      if (data.success === false) {
+
+      if (!data.success) {
         setError(data.message);
+        return;
       }
 
       navigate(`/listing/${data.listing._id}`);
-    } catch (error) {
-      setError(error.message);
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setLoading(false);
     }
   };
+
   return (
     <main className="p-3 max-w-4xl mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">
@@ -259,7 +242,7 @@ export default function CreateListing() {
           <div className="flex gap-6 flex-wrap">
             <div className="flex gap-2">
               <input
-                type="checkbox"
+                type="radio"
                 id="sale"
                 className="w-5"
                 onChange={handleChange}
@@ -269,7 +252,7 @@ export default function CreateListing() {
             </div>
             <div className="flex gap-2">
               <input
-                type="checkbox"
+                type="radio"
                 id="rent"
                 className="w-5"
                 onChange={handleChange}
@@ -348,7 +331,7 @@ export default function CreateListing() {
               />
               <div className="flex flex-col items-center">
                 <p>Regular price</p>
-                <span className="text-xs">($ / month)</span>
+                <span className="text-xs">{paymentLabel}</span>
               </div>
             </div>
             {formData.offer && (
@@ -365,7 +348,7 @@ export default function CreateListing() {
                 />
                 <div className="flex flex-col items-center">
                   <p>Discounted price</p>
-                  <span className="text-xs">($ / month)</span>
+                  <span className="text-xs">{paymentLabel}</span>
                 </div>
               </div>
             )}
@@ -380,39 +363,105 @@ export default function CreateListing() {
           </p>
           <div className="flex gap-4">
             <input
-              onChange={(e) => setFiles(Array.from(e.target.files || []))}
+              onChange={(e) => {
+                const selectedFiles = Array.from(e.target.files || []);
+
+                console.log('selectedFiles', selectedFiles);
+
+                console.log('files', files);
+
+                console.log('existingImages', existingImages);
+
+                if (
+                  existingImages.length + files.length + selectedFiles.length >
+                  6
+                ) {
+                  setImageUploadError('You can only have 6 images per listing');
+                  return;
+                }
+
+                if (selectedFiles.some((file) => file.size > 2 * 1024 * 1024)) {
+                  setImageUploadError('Each image must be smaller than 2 MB');
+                  return;
+                }
+
+                const filesWithPreview = selectedFiles.map((file) => ({
+                  file,
+                  preview: URL.createObjectURL(file),
+                }));
+
+                console.log('filesWithPreview', filesWithPreview);
+
+                setFiles((prev) => [...prev, ...filesWithPreview]);
+                console.log('files.length', files.length);
+
+                setImageUploadError('');
+
+                // Allow selecting the same file again
+                e.target.value = '';
+              }}
               className="p-3 border border-gray-300 rounded w-full"
               type="file"
               id="images"
               accept="image/*"
               multiple
             />
-            <button
-              type="button"
-              disabled={uploading}
-              onClick={handleImageSubmit}
-              className="p-3 text-green-700 border border-green-700 rounded uppercase hover:shadow-lg disabled:opacity-80"
-            >
-              {uploading ? 'Uploading...' : 'Upload'}
-            </button>
+            <p className="text-sm text-gray-600">
+              Select up to 6 images. They will be uploaded when you create the
+              listing.
+            </p>
           </div>
           <p className="text-red-700 text-sm">
             {imageUploadError && imageUploadError}
           </p>
-          {formData.imageUrls.length > 0 &&
-            formData.imageUrls.map((url, index) => (
+          {existingImages.length > 0 &&
+            existingImages.map((image, index) => (
               <div
-                key={url}
+                key={image.publicId || image.url}
                 className="flex justify-between p-3 border items-center"
               >
                 <img
-                  src={url}
+                  src={image.url}
                   alt="listing image"
                   className="w-20 h-20 object-contain rounded-lg"
                 />
+                {index === 0 && (
+                  <span className="text-sm font-semibold">Cover</span>
+                )}
                 <button
                   type="button"
-                  onClick={() => handleRemoveImage(index)}
+                  onClick={() => handleRemoveExistingImage(index)}
+                  className="p-3 text-red-700 rounded-lg uppercase hover:opacity-75"
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
+          {files.length > 0 &&
+            files.map(({ preview, file }, index) => (
+              <div
+                key={preview}
+                className="flex justify-between p-3 border items-center"
+              >
+                <div className="flex items-center gap-3">
+                  <img
+                    src={preview}
+                    alt={`new listing image ${index + 1}`}
+                    className="w-20 h-20 object-cover rounded-lg"
+                  />
+
+                  <div className="flex flex-col">
+                    {existingImages.length === 0 && index === 0 && (
+                      <span className="text-sm font-semibold">Cover</span>
+                    )}
+
+                    <span className="text-xs text-gray-500">{file.name}</span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleRemoveNewImage(index)}
                   className="p-3 text-red-700 rounded-lg uppercase hover:opacity-75"
                 >
                   Delete
