@@ -10,7 +10,7 @@ interface IUserMethods {
   getJWTToken(): string;
 }
 
-type UserDocument = mongoose.HydratedDocument<IUser, IUserMethods>;
+export type UserDocument = mongoose.HydratedDocument<IUser, IUserMethods>;
 
 const userSchema = new Schema<IUser, mongoose.Model<IUser, {}, IUserMethods>>(
   {

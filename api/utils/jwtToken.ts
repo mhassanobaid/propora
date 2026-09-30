@@ -1,12 +1,25 @@
-// Create Token and saving in cookie
+import type { Response } from "express";
 
-const sendToken = (user, statusCode, res) => {
+import type { UserDocument } from "../models/user.model.js";
+
+const sendToken = (
+  user: UserDocument,
+  statusCode: number,
+  res: Response,
+): void => {
   const token = user.getJWTToken();
+  
 
   // options for cookie
+  const cookieExpire = process.env.COOKIE_EXPIRE;
+
+  if (!cookieExpire) {
+    throw new Error("COOKIE_EXPIRE is not defined");
+  }
+
   const options = {
     expires: new Date(
-      Date.now() + process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000,
+      Date.now() + Number(cookieExpire) * 24 * 60 * 60 * 1000,
     ),
     httpOnly: true,
   };

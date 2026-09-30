@@ -7,4 +7,7 @@ export interface IUser {
   avatar?: string;
   firebaseUid?: string;
   authProvider: AuthProvider;
+
+  createdAt: Date;
+  updatedAt: Date;
 }
