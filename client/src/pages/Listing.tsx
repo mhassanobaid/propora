@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
-// Swiper
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, A11y } from 'swiper/modules';
 
-// React Icons
 import {
   FaShareAlt,
   FaMapMarkerAlt,
@@ -17,21 +16,23 @@ import {
   FaCheckCircle,
 } from 'react-icons/fa';
 
-// Swiper CSS
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import { useSelector } from 'react-redux';
+
 import Contact from '../components/Contact';
 
+import type { RootState } from '../app/store';
+import type { Listing as ListingType } from '../types/listing.types';
+
 export default function Listing() {
-  const { listingId } = useParams();
+  const { listingId } = useParams<{ listingId: string }>();
 
   // ================================
   // STATE
   // ================================
 
-  const [listing, setListing] = useState(null);
+  const [listing, setListing] = useState<ListingType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -41,8 +42,12 @@ export default function Listing() {
   // Track images that fail to load.
   // This allows the details to remain visible
   // even when placeholder URLs are broken.
-  const [failedImages, setFailedImages] = useState([]);
-  const { currentUser } = useSelector((state) => state.user);
+  const [failedImages, setFailedImages] = useState<string[]>([]);
+
+  const { currentUser } = useSelector(
+    (state: RootState) => state.user,
+  );
+
   const [contact, setContact] = useState(false);
 
   // ================================
@@ -51,23 +56,33 @@ export default function Listing() {
 
   useEffect(() => {
     const fetchListing = async () => {
+      if (!listingId) {
+        setError(true);
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         setError(false);
 
-        const res = await fetch(`/api/v1/listings/${listingId}`);
+        const res = await fetch(
+          `/api/v1/listings/${listingId}`,
+        );
 
-        const data = await res.json();
+        const data: {
+          success: boolean;
+          listing?: ListingType;
+          message?: string;
+        } = await res.json();
 
-        if (!res.ok || data.success === false) {
+        if (!res.ok || data.success === false || !data.listing) {
           setError(true);
           return;
         }
 
-        // Your backend response:
-        // { success: true, listing: {...} }
         setListing(data.listing);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Error fetching listing:', err);
         setError(true);
       } finally {
@@ -85,7 +100,9 @@ export default function Listing() {
   const handleShare = async () => {
     try {
       // Copy current listing URL.
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(
+        window.location.href,
+      );
 
       // Show success message.
       setCopied(true);
@@ -94,7 +111,7 @@ export default function Listing() {
       setTimeout(() => {
         setCopied(false);
       }, 2000);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to copy link:', err);
     }
   };
@@ -104,7 +121,11 @@ export default function Listing() {
   // ================================
 
   if (loading) {
-    return <p className="text-center my-10 text-xl">Loading listing...</p>;
+    return (
+      <p className="text-center my-10 text-xl">
+        Loading listing...
+      </p>
+    );
   }
 
   // ================================
@@ -126,19 +147,23 @@ export default function Listing() {
   // Remove empty image URLs.
   const validImageUrls = Array.isArray(listing.imageUrls)
     ? listing.imageUrls.filter(
-        (url) => typeof url === 'string' && url.trim() !== '',
+        (url: string) =>
+          typeof url === 'string' && url.trim() !== '',
       )
     : [];
 
   // Remove images that failed to load.
   const visibleImageUrls = validImageUrls.filter(
-    (url) => !failedImages.includes(url),
+    (url: string) => !failedImages.includes(url),
   );
 
   // Called when an image cannot load.
-  const handleImageError = (url) => {
+  const handleImageError = (url: string) => {
     setFailedImages((prev) => {
-      if (prev.includes(url)) return prev;
+      if (prev.includes(url)) {
+        return prev;
+      }
+
       return [...prev, url];
     });
   };
@@ -157,7 +182,9 @@ export default function Listing() {
     discountPrice < regularPrice;
 
   // Amount saved
-  const savings = hasOffer ? regularPrice - discountPrice : 0;
+  const savings = hasOffer
+    ? regularPrice - discountPrice
+    : 0;
 
   // Discount percentage
   const discountPercentage = hasOffer
@@ -165,15 +192,20 @@ export default function Listing() {
     : 0;
 
   // Prices
-  const formattedRegularPrice = regularPrice.toLocaleString('en-US');
+  const formattedRegularPrice =
+    regularPrice.toLocaleString('en-US');
 
-  const formattedDiscountPrice = discountPrice.toLocaleString('en-US');
+  const formattedDiscountPrice =
+    discountPrice.toLocaleString('en-US');
 
-  const formattedSavings = savings.toLocaleString('en-US');
+  const formattedSavings =
+    savings.toLocaleString('en-US');
 
   // Payment label
   const paymentLabel =
-    listing.type === 'rent' ? 'per month' : 'one-time payment';
+    listing.type === 'rent'
+      ? 'per month'
+      : 'one-time payment';
 
   // ================================
   // JSX
@@ -228,7 +260,7 @@ export default function Listing() {
           >
             {visibleImageUrls.map((url, index) => (
               <SwiperSlide key={`${url}-${index}`}>
-                <div className="h-[280px] sm:h-[400px] md:h-[500px] bg-slate-100">
+                <div className="h-70 sm:h-100 md:h-125 bg-slate-100">
                   <img
                     src={url}
                     alt={`${listing.name} - Image ${index + 1}`}

@@ -3,12 +3,12 @@ import userReducer from '../features/user/userSlice';
 import { persistReducer, persistStore } from 'redux-persist';
 
 const storage = {
-  getItem: (key) => Promise.resolve(localStorage.getItem(key)),
-  setItem: (key, value) => {
+  getItem: (key: string) => Promise.resolve(localStorage.getItem(key)),
+  setItem: (key: string, value: string) => {
     localStorage.setItem(key, value);
     return Promise.resolve();
   },
-  removeItem: (key) => {
+  removeItem: (key : string) => {
     localStorage.removeItem(key);
     return Promise.resolve();
   },
@@ -33,4 +33,5 @@ export const store = configureStore({
     }),
 });
 
+export type RootState = ReturnType<typeof store.getState>;
 export const persistor = persistStore(store);

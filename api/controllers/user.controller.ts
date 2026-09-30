@@ -4,12 +4,15 @@ import Listing from "../models/listing.model.js";
 import User from "../models/user.model.js";
 import ErrorHandler from "../utils/errorHandler.js";
 import type { ApiResponse } from "../types/api.types.js";
+import cloudinary from "../config/cloudinary.js";
+import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 
 interface UpdateUserProfileBody {
   username?: string;
   email?: string;
   password?: string;
   avatar?: string;
+  avatarPublicId?: string;
 }
 
 export const test = async (req: Request, res: Response) => {
@@ -22,38 +25,60 @@ export const updateUserProfile = catchAsyncErrors(
     res: Response,
     next: NextFunction,
   ) => {
-    if (req.params.id != req.user!.id) {
-      return next(new ErrorHandler("User can update only its prfofile", 401));
+    if (req.params.id !== req.user!.id) {
+      return next(new ErrorHandler("User can update only its profile", 401));
     }
 
-    const newUserData = {
-      username: req.body.username,
-      email: req.body.email,
-      password: req.body.password,
-      avatar: req.body.avatar,
-    };
-
-    // why again findById in action though we had quered mongodb for user fetching in middleware of auth but it might possible that our profile has stale data or non fresh data so to prevent it again fetch
     const user = await User.findById(req.user!.id).select("+password");
 
     if (!user) {
       return next(new ErrorHandler("User not found", 404));
     }
 
-    user.username = newUserData.username ?? user.username;
-    user.email = newUserData.email ?? user.email;
-    user.avatar = newUserData.avatar ?? user.avatar;
+    // Keep the old image information before changing anything
+    const oldAvatarPublicId = user.avatarPublicId;
 
-    if (newUserData.password) {
-      user.password = newUserData.password;
+    // Update normal profile fields
+    user.username = req.body.username ?? user.username;
+    user.email = req.body.email ?? user.email;
+
+    if (req.body.password) {
+      user.password = req.body.password;
     }
 
-    await user.save();
+    let newAvatarPublicId: string | undefined;
 
-    return res.status(200).json({
-      success: true,
-      user: user,
-    });
+    try {
+      // If user selected a new avatar
+      if (req.file) {
+        const uploadedImage = await uploadToCloudinary(req.file.buffer);
+
+        user.avatar = uploadedImage.secure_url;
+        user.avatarPublicId = uploadedImage.public_id;
+
+        newAvatarPublicId = uploadedImage.public_id;
+      }
+
+      await user.save();
+
+      // Delete OLD Cloudinary image only after DB update succeeds
+      if (req.file && oldAvatarPublicId) {
+        await cloudinary.uploader.destroy(oldAvatarPublicId);
+      }
+
+      return res.status(200).json({
+        success: true,
+        user,
+      });
+    } catch (error) {
+      // If new image was uploaded but DB update failed,
+      // remove the new image to avoid an orphaned Cloudinary file.
+      if (newAvatarPublicId) {
+        await cloudinary.uploader.destroy(newAvatarPublicId);
+      }
+
+      return next(error);
+    }
   },
 );
 

@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { MdLocationOn } from 'react-icons/md';
+import type { Listing } from '../types/listing.types';
 
-export default function ListingItem({ listing }) {
+export default function ListingItem({ listing } : {listing: Listing} ){
   return (
     <div className="bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[330px]">
       <Link to={`/listing/${listing._id}`}>
@@ -29,7 +30,7 @@ export default function ListingItem({ listing }) {
           <p className="text-slate-500 mt-2 font-semibold ">
             $
             {listing.offer
-              ? listing.discountPrice.toLocaleString('en-US')
+              ? listing.discountPrice?.toLocaleString('en-US')
               : listing.regularPrice.toLocaleString('en-US')}
             {listing.type === 'rent' && ' / month'}
           </p>

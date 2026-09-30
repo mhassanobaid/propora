@@ -1,52 +1,95 @@
-import { useEffect, useState } from 'react';
-// import {
-//   getDownloadURL,
-//   getStorage,
-//   ref,
-//   uploadBytesResumable,
-// } from 'firebase/storage';
-// import { app } from '../firebase';
-import { useSelector } from 'react-redux';
+import {
+  useEffect,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-export default function CreateListing() {
-  const { currentUser } = useSelector((state) => state.user);
+import type { Listing } from '../types/listing.types';
+
+import { ListingType } from '../types/listing.types';
+
+interface ListingFormData {
+  name: string;
+  description: string;
+  address: string;
+  type: ListingType;
+  bedrooms: string;
+  bathrooms: string;
+  regularPrice: string;
+  discountPrice: string;
+  offer: boolean;
+  parking: boolean;
+  furnished: boolean;
+}
+
+interface ExistingImage {
+  url: string;
+  publicId: string | null;
+}
+
+interface NewImage {
+  file: File;
+  preview: string;
+}
+
+interface ListingResponse {
+  success: boolean;
+  message?: string;
+  listing?: Listing;
+}
+
+export default function UpdateListing() {
   const navigate = useNavigate();
-  const params = useParams();
-  const [files, setFiles] = useState([]);
-  const [existingImages, setExistingImages] = useState([]);
-  const [formData, setFormData] = useState({
+  const params = useParams<{ listingId: string }>();
+
+  const [files, setFiles] = useState<NewImage[]>([]);
+  const [existingImages, setExistingImages] = useState<ExistingImage[]>([]);
+
+  const [formData, setFormData] = useState<ListingFormData>({
     name: '',
     description: '',
     address: '',
-    type: 'rent',
-    bedrooms: 1,
-    bathrooms: 1,
-    regularPrice: 50,
-    discountPrice: 0,
+    type: ListingType.Rent,
+    bedrooms: '1',
+    bathrooms: '1',
+    regularPrice: '50',
+    discountPrice: '0',
     offer: false,
     parking: false,
     furnished: false,
   });
-  const [imageUploadError, setImageUploadError] = useState(false);
+
+  const [imageUploadError, setImageUploadError] = useState('');
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const paymentLabel =
-    formData.type === 'rent' ? '$ / month' : '$ one-time payment';
+    formData.type === 'rent'
+      ? '$ / month'
+      : '$ one-time payment';
 
   useEffect(() => {
     const fetchListing = async () => {
+      if (!params.listingId) {
+        setError('Listing ID is missing');
+        return;
+      }
+
       try {
-        const res = await fetch(`/api/v1/listings/${params.listingId}`, {
-          credentials: 'include',
-        });
+        const res = await fetch(
+          `/api/v1/listings/${params.listingId}`,
+          {
+            credentials: 'include',
+          },
+        );
 
-        const data = await res.json();
+        const data: ListingResponse = await res.json();
 
-        if (!data.success) {
-          setError(data.message);
+        if (!data.success || !data.listing) {
+          setError(data.message ?? 'Failed to fetch listing');
           return;
         }
 
@@ -57,10 +100,10 @@ export default function CreateListing() {
           description: listing.description,
           address: listing.address,
           type: listing.type,
-          bedrooms: listing.bedrooms,
-          bathrooms: listing.bathrooms,
-          regularPrice: listing.regularPrice,
-          discountPrice: listing.discountPrice,
+          bedrooms: String(listing.bedrooms),
+          bathrooms: String(listing.bathrooms),
+          regularPrice: String(listing.regularPrice),
+          discountPrice: String(listing.discountPrice ?? 0),
           offer: listing.offer,
           parking: listing.parking,
           furnished: listing.furnished,
@@ -69,89 +112,81 @@ export default function CreateListing() {
         setExistingImages(
           listing.imageUrls.map((url, index) => ({
             url,
-            publicId: listing.imagePublicIds?.[index] || null,
+            publicId: listing.imagePublicIds?.[index] ?? null,
           })),
         );
-      } catch (err) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Something went wrong',
+        );
       }
     };
 
     fetchListing();
   }, [params.listingId]);
 
-  //   const storeImage = async (file) => {
-  //     return new Promise((resolve, reject) => {
-  //       const storage = getStorage(app);
-  //       const fileName = new Date().getTime() + file.name;
-  //       const storageRef = ref(storage, fileName);
-  //       const uploadTask = uploadBytesResumable(storageRef, file);
-  //       uploadTask.on(
-  //         'state_changed',
-  //         (snapshot) => {
-  //           const progress =
-  //             (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-  //           console.log(`Upload is ${progress}% done`);
-  //         },
-  //         (error) => {
-  //           reject(error);
-  //         },
-  //         () => {
-  //           getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-  //             resolve(downloadURL);
-  //           });
-  //         },
-  //       );
-  //     });
-  //   };
-
-  const handleRemoveExistingImage = (index) => {
-    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  const handleRemoveExistingImage = (index: number) => {
+    setExistingImages((prev) =>
+      prev.filter((_, i) => i !== index),
+    );
   };
 
-  const handleRemoveNewImage = (index) => {
+  const handleRemoveNewImage = (index: number) => {
     setFiles((prev) => {
       const image = prev[index];
 
-      URL.revokeObjectURL(image.preview);
+      if (image) {
+        URL.revokeObjectURL(image.preview);
+      }
 
       return prev.filter((_, i) => i !== index);
     });
   };
 
-  const handleChange = (e) => {
-    if (e.target.id === 'sale' || e.target.id === 'rent') {
-      setFormData({
-        ...formData,
-        type: e.target.id,
-      });
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { id, value, type } = e.target;
+
+    if (id === 'sale' || id === 'rent') {
+      setFormData((prev) => ({
+        ...prev,
+        type: id as ListingType,
+      }));
+
+      return;
     }
 
     if (
-      e.target.id === 'parking' ||
-      e.target.id === 'furnished' ||
-      e.target.id === 'offer'
+      id === 'parking' ||
+      id === 'furnished' ||
+      id === 'offer'
     ) {
-      setFormData({
-        ...formData,
-        [e.target.id]: e.target.checked,
-      });
+      setFormData((prev) => ({
+        ...prev,
+        [id]: (e.target as HTMLInputElement).checked,
+      }));
+
+      return;
     }
 
-    if (
-      e.target.type === 'number' ||
-      e.target.type === 'text' ||
-      e.target.type === 'textarea'
-    ) {
-      setFormData({
-        ...formData,
-        [e.target.id]: e.target.value,
-      });
-    }
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (
+    e: FormEvent<HTMLFormElement>,
+  ) => {
     e.preventDefault();
+
+    if (!params.listingId) {
+      setError('Listing ID is missing');
+      return;
+    }
 
     if (existingImages.length + files.length < 1) {
       setError('You must have at least one image');
@@ -159,45 +194,54 @@ export default function CreateListing() {
     }
 
     if (+formData.regularPrice < +formData.discountPrice) {
-      setError('Discount price must be lower than regular price');
+      setError(
+        'Discount price must be lower than regular price',
+      );
       return;
     }
 
     try {
       setLoading(true);
-      setError(false);
+      setError('');
 
       const dataToSend = new FormData();
 
-      // Text and numeric fields
       Object.entries(formData).forEach(([key, value]) => {
-        dataToSend.append(key, value);
+        dataToSend.append(key, String(value));
       });
 
-      // Existing images that were NOT deleted
-      dataToSend.append('existingImages', JSON.stringify(existingImages));
+      dataToSend.append(
+        'existingImages',
+        JSON.stringify(existingImages),
+      );
 
-      // New image files
       files.forEach(({ file }) => {
         dataToSend.append('images', file);
       });
 
-      const res = await fetch(`/api/v1/listings/${params.listingId}`, {
-        method: 'PUT',
-        credentials: 'include',
-        body: dataToSend,
-      });
+      const res = await fetch(
+        `/api/v1/listings/${params.listingId}`,
+        {
+          method: 'PUT',
+          credentials: 'include',
+          body: dataToSend,
+        },
+      );
 
-      const data = await res.json();
+      const data: ListingResponse = await res.json();
 
-      if (!data.success) {
-        setError(data.message);
+      if (!data.success || !data.listing) {
+        setError(data.message ?? 'Failed to update listing');
         return;
       }
 
       navigate(`/listing/${data.listing._id}`);
-    } catch (err) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Something went wrong',
+      );
     } finally {
       setLoading(false);
     }
@@ -215,14 +259,13 @@ export default function CreateListing() {
             placeholder="Name"
             className="border p-3 rounded-lg"
             id="name"
-            maxLength="62"
-            minLength="10"
+            maxLength={62}
+            minLength={10}
             required
             onChange={handleChange}
             value={formData.name}
           />
           <textarea
-            type="text"
             placeholder="Description"
             className="border p-3 rounded-lg"
             id="description"

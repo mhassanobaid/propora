@@ -1,5 +1,14 @@
-import { useSelector } from 'react-redux';
-import { useRef, useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '../app/store';
+import {
+  useRef,
+  useState,
+  useEffect,
+} from 'react';
+import type {
+  ChangeEvent,
+  FormEvent,
+} from 'react';
 import {
   updateUserStart,
   updateUserSuccess,
@@ -12,63 +21,38 @@ import {
   signOutUserSuccess,
   signOutUserFailure,
 } from '../features/user/userSlice';
-import { useDispatch } from 'react-redux';
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from 'firebase/storage';
 import { Link } from 'react-router-dom';
-import { app } from '../firebase/firebase';
+import type { Listing } from '../types/listing.types';
+import type { ApiResponse } from '../types/api.types';
+
+interface ProfileFormData {
+  username?: string;
+  email?: string;
+  password?: string;
+  avatar?: string;
+}
 
 export default function Profile() {
-  const fileRef = useRef(null);
-  const { currentUser, error, loading } = useSelector((state) => state.user);
-  const [file, setFile] = useState(undefined);
-  const [filePerc, setFilePerc] = useState(0);
-  const [fileUploadError, setFileUploadError] = useState(false);
-  const [formData, setFormData] = useState({});
+	const fileRef = useRef<HTMLInputElement | null>(null);
+  const { currentUser, error, loading } = useSelector(
+    (state: RootState) => state.user
+	);
+	const [file, setFile] = useState<File | undefined>(undefined);
+	const [formData, setFormData] = useState<ProfileFormData>({});
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [showListingsError, setShowListingsError] = useState(false);
-  const [userListings, setUserListings] = useState([]);
+	const [userListings, setUserListings] = useState<Listing[]>([]);
+	const [showNoListingsToast, setShowNoListingsToast] = useState(false);
   const dispatch = useDispatch();
+	if (!currentUser) {
+		return <div>Loading...</div>;
+	}
 
   // firebase storage
   // allow read;
   // allow write: if
   // request.resource.size < 2 * 1024 * 1024 &&
   // request.resource.contentType.matches('image/.*')
-
-  useEffect(() => {
-    if (file) {
-      handleFileUpload(file);
-    }
-  }, [file]);
-
-  const handleFileUpload = (file) => {
-    const storage = getStorage(app);
-    const fileName = new Date().getTime() + file.name;
-    const storageRef = ref(storage, fileName);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
-    uploadTask.on(
-      'state_changed',
-      (snapshot) => {
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setFilePerc(Math.round(progress));
-      },
-      (error) => {
-        setFileUploadError(true);
-      },
-      () => {
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) =>
-          setFormData({ ...formData, avatar: downloadURL }),
-        );
-      },
-    );
-  };
 
   useEffect(() => {
     if (updateSuccess || error) {
@@ -81,33 +65,67 @@ export default function Profile() {
     }
   }, [updateSuccess, error, dispatch]);
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      dispatch(updateUserStart());
-      const res = await fetch(`/api/v1/users/update/${currentUser._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-      const data = await res.json();
-      if (data.success === false) {
-        dispatch(updateUserFailure(data.message));
-        return;
-      }
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
 
-      dispatch(updateUserSuccess(data.user));
-      setUpdateSuccess(true);
-    } catch (error) {
-      dispatch(updateUserFailure(error.message));
-    }
-  };
+		try {
+			dispatch(updateUserStart());
+
+			const profileFormData = new FormData();
+
+			if (formData.username) {
+				profileFormData.append('username', formData.username);
+			}
+
+			if (formData.email) {
+				profileFormData.append('email', formData.email);
+			}
+
+			if (formData.password) {
+				profileFormData.append('password', formData.password);
+			}
+
+			if (file) {
+				profileFormData.append('avatar', file);
+			}
+
+			const res = await fetch(
+				`/api/v1/users/update/${currentUser._id}`,
+				{
+					method: 'PUT',
+					credentials: 'include',
+					body: profileFormData,
+				},
+			);
+
+			const data = await res.json();
+
+			if (!res.ok || data.success === false) {
+				dispatch(
+					updateUserFailure(
+						data.message || 'Failed to update profile',
+					),
+				);
+				return;
+			}
+
+			dispatch(updateUserSuccess(data.user));
+			setUpdateSuccess(true);
+			setFile(undefined);
+		} catch (error) {
+			dispatch(
+				updateUserFailure(
+					error instanceof Error
+						? error.message
+						: 'Something went wrong',
+				),
+			);
+		}
+	};
 
   const handleDeleteUser = async () => {
     try {
@@ -115,15 +133,19 @@ export default function Profile() {
       const res = await fetch(`/api/v1/users/delete/${currentUser._id}`, {
         method: 'DELETE',
       });
-      const data = await res.json();
+      const data: ApiResponse<never> = await res.json();
       if (data.success === false) {
         dispatch(deleteUserFailure(data.message));
         return;
       }
-      dispatch(deleteUserSuccess(data.user));
+      dispatch(deleteUserSuccess());
     } catch (error) {
-      dispatch(deleteUserFailure(error.message));
-    }
+			dispatch(
+				updateUserFailure(
+					error instanceof Error ? error.message : 'Something went wrong',
+				),
+			);
+		}
   };
 
   const handleSignOut = async () => {
@@ -137,27 +159,41 @@ export default function Profile() {
       }
       dispatch(signOutUserSuccess(data));
     } catch (error) {
-      dispatch(signOutUserFailure(data.message));
-    }
+			dispatch(
+				signOutUserFailure(
+					error instanceof Error ? error.message : 'Something went wrong',
+				),
+			);
+		}
   };
 
   const handleShowListings = async () => {
     try {
       setShowListingsError(false);
+
       const res = await fetch(`/api/v1/users/${currentUser._id}/listings`);
       const data = await res.json();
+
       if (data.success === false) {
         setShowListingsError(true);
         return;
       }
 
       setUserListings(data.listings);
+
+			if (data.listings.length === 0) {
+				setShowNoListingsToast(true);
+
+				setTimeout(() => {
+					setShowNoListingsToast(false);
+				}, 3000);
+			}
     } catch (error) {
       setShowListingsError(true);
     }
   };
 
-  const handleListingDelete = async (listingId) => {
+  const handleListingDelete = async (listingId: string) => {
     try {
       const res = await fetch(`/api/v1/listings/${listingId}`, {
         method: 'DELETE',
@@ -172,40 +208,39 @@ export default function Profile() {
         prev.filter((listing) => listing._id !== listingId),
       );
     } catch (error) {
-      console.log(error.message);
-    }
+			console.log(
+				error instanceof Error ? error.message : 'Something went wrong',
+			);
+		}
   };
+
+	const avatarPreview = file
+  ? URL.createObjectURL(file)
+  : currentUser.avatar;
 
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
-          onChange={(e) => setFile(e.target.files[0])}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+						const selectedFile = e.target.files?.[0];
+
+						if (selectedFile) {
+							setFile(selectedFile);
+						}
+					}}
           type="file"
           ref={fileRef}
           hidden
           accept="image/*"
         />
         <img
-          onClick={() => fileRef.current.click()}
-          src={formData.avatar || currentUser.avatar || null}
+					onClick={() => fileRef.current?.click()}
+          src={avatarPreview}
           alt="profile"
           className="rounded-full h-24 w-24 object-cover cursor-pointer self-center mt-2"
         />
-        <p className="text-sm self-center">
-          {fileUploadError ? (
-            <span className="text-red-700">
-              Error Image upload (image must be less than 2 mb)
-            </span>
-          ) : filePerc > 0 && filePerc < 100 ? (
-            <span className="text-slate-700">{`Uploading ${filePerc}%`}</span>
-          ) : filePerc === 100 ? (
-            <span className="text-green-700">Image successfully uploaded!</span>
-          ) : (
-            ''
-          )}
-        </p>
         <p className="text-red-700 mt-5 text-center">{error ? error : ''}</p>
         <p className="text-green-700 mt-5 text-center">
           {updateSuccess ? 'User is updated successfully!' : ''}
@@ -257,6 +292,9 @@ export default function Profile() {
           Sign out
         </span>
       </div>
+			
+			{showNoListingsToast && ( <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-md rounded-xl border border-amber-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-xl"> <div className="flex items-center gap-3"> <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600"> ! </span> <p> You don't have any listings yet.{' '} <Link to="/create-listing" className="font-semibold text-green-700 hover:text-green-800 hover:underline" > Create one </Link>{' '} to see it here. </p> </div> </div> )}
+
       <button onClick={handleShowListings} className="text-green-700 w-full">
         Show Listings
       </button>

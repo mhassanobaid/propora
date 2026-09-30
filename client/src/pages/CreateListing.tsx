@@ -1,26 +1,45 @@
-import { useEffect, useState } from 'react';
-// import {
-//   getDownloadURL,
-//   getStorage,
-//   ref,
-//   uploadBytesResumable,
-// } from 'firebase/storage';
-// import { app } from '../firebase';
-
-import { useSelector } from 'react-redux';
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { ListingType } from '../types/listing.types';
+
+interface ListingFormData {
+  name: string;
+  description: string;
+  address: string;
+  type: ListingType;
+  bedrooms: string;
+  bathrooms: string;
+  regularPrice: string;
+  discountPrice: string;
+  offer: boolean;
+  parking: boolean;
+  furnished: boolean;
+}
+
+interface ImageFile {
+  file: File;
+  preview: string;
+}
+
+interface CreateListingResponse {
+  success: boolean;
+  message?: string;
+  listing?: {
+    _id: string;
+  };
+}
+
 export default function CreateListing() {
-  const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
 
-  const [files, setFiles] = useState([]);
+  const [files, setFiles] = useState<ImageFile[]>([]);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ListingFormData>({
     name: '',
     description: '',
     address: '',
-    type: 'sale',
+    type: ListingType.Sale,
     bedrooms: '',
     bathrooms: '',
     regularPrice: '',
@@ -36,7 +55,9 @@ export default function CreateListing() {
   const [loading, setLoading] = useState(false);
 
   const paymentLabel =
-    formData.type === 'rent' ? '$ / month' : '$ one-time payment';
+    formData.type === 'rent'
+      ? '$ / month'
+      : '$ one-time payment';
 
   useEffect(() => {
     return () => {
@@ -44,96 +65,44 @@ export default function CreateListing() {
         URL.revokeObjectURL(preview);
       });
     };
-  }, []);
+  }, [files]);
 
   // --------------------------------------------------
   // Generic form handler
   // --------------------------------------------------
 
-  const handleChange = (e) => {
-    const { id, value, type, checked } = e.target;
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,) => {
+    const { id, value, type } = e.target;
 
-    setFormData((prev) => ({
-      ...prev,
-      [id]: type === 'checkbox' ? checked : value,
-    }));
+		setFormData((prev) => ({
+			...prev,
+			[id]: type === 'checkbox'
+				? (e.target as HTMLInputElement).checked
+				: value,
+		}));
   };
-
-  // --------------------------------------------------
-  // Temporary image upload
-  // --------------------------------------------------
-
-  /*
-  ==================================================
-  FUTURE FIREBASE FUNCTION
-  ==================================================
-
-  const storeImage = async (file) => {
-    return new Promise((resolve, reject) => {
-      const storage = getStorage(app);
-
-      const fileName =
-        new Date().getTime() + '-' + file.name;
-
-      const storageRef = ref(storage, fileName);
-
-      const uploadTask = uploadBytesResumable(
-        storageRef,
-        file
-      );
-
-      uploadTask.on(
-        'state_changed',
-
-        (snapshot) => {
-          const progress =
-            (snapshot.bytesTransferred /
-              snapshot.totalBytes) *
-            100;
-
-          console.log(
-            `Upload is ${progress}% done`
-          );
-        },
-
-        (error) => {
-          reject(error);
-        },
-
-        async () => {
-          const downloadURL =
-            await getDownloadURL(
-              uploadTask.snapshot.ref
-            );
-
-          resolve(downloadURL);
-        }
-      );
-    });
-  };
-
-  ==================================================
-  */
 
   // --------------------------------------------------
   // Remove image
   // --------------------------------------------------
 
-  // --------------------------------------------------
-  // Create listing
-  // --------------------------------------------------
-
-  const handleRemoveImage = (index) => {
+  const handleRemoveImage = (index: number) => {
     setFiles((prev) => {
       const fileToRemove = prev[index];
 
-      URL.revokeObjectURL(fileToRemove.preview);
+      if (fileToRemove) {
+        URL.revokeObjectURL(fileToRemove.preview);
+      }
 
       return prev.filter((_, i) => i !== index);
     });
   };
 
-  const handleSubmit = async (e) => {
+  // --------------------------------------------------
+  // Create listing
+  // --------------------------------------------------
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
@@ -163,9 +132,12 @@ export default function CreateListing() {
       // Validate discount price
       if (
         formData.offer &&
-        Number(formData.discountPrice) > Number(formData.regularPrice)
+        Number(formData.discountPrice) >
+          Number(formData.regularPrice)
       ) {
-        setError('Discount price cannot be greater than regular price');
+        setError(
+          'Discount price cannot be greater than regular price',
+        );
         return;
       }
 
@@ -180,7 +152,9 @@ export default function CreateListing() {
           return;
         }
 
-        listingFormData.append(key, value);
+        // FormData.append expects string/blob.
+        // String() preserves the original form submission behavior.
+        listingFormData.append(key, String(value));
       });
 
       // Add images
@@ -194,7 +168,7 @@ export default function CreateListing() {
         body: listingFormData,
       });
 
-      const data = await res.json();
+      const data: CreateListingResponse = await res.json();
 
       if (!res.ok || data.success === false) {
         setError(data.message || 'Failed to create listing');
@@ -203,9 +177,18 @@ export default function CreateListing() {
 
       console.log('Listing created:', data);
 
+      if (!data.listing?._id) {
+        setError('Listing was created but ID was not returned');
+        return;
+      }
+
       navigate(`/listing/${data.listing._id}`);
     } catch (err) {
-      setError(err.message || 'Something went wrong');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Something went wrong',
+      );
     } finally {
       setLoading(false);
     }
@@ -271,12 +254,12 @@ export default function CreateListing() {
                 value="sale"
                 className="w-5"
                 checked={formData.type === 'sale'}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    type: e.target.value,
-                  }))
-                }
+                onChange={() =>
+									setFormData((prev) => ({
+										...prev,
+										type: ListingType.Sale,
+									}))
+								}
               />
 
               <label htmlFor="sale">Sell</label>
@@ -291,12 +274,12 @@ export default function CreateListing() {
                 value="rent"
                 className="w-5"
                 checked={formData.type === 'rent'}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    type: e.target.value,
-                  }))
-                }
+                onChange={() =>
+									setFormData((prev) => ({
+										...prev,
+  									type: ListingType.Rent,
+									}))
+								}
               />
 
               <label htmlFor="rent">Rent</label>

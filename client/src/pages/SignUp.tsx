@@ -1,24 +1,43 @@
-import { useState } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import OAuth from '../components/OAuth';
 
+interface SignUpFormData {
+  username: string;
+  email: string;
+  password: string;
+}
+
+interface SignUpResponse {
+  success: boolean;
+  message?: string;
+}
+
 export default function SignUp() {
-  const [formData, setFormData] = useState({});
-  const [error, setError] = useState(null);
+  const [formData, setFormData] = useState<SignUpFormData>({
+    username: '',
+    email: '',
+    password: '',
+  });
+
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.id]: e.target.value,
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     try {
       setLoading(true);
+
       const res = await fetch('/api/v1/signup', {
         method: 'POST',
         headers: {
@@ -26,26 +45,39 @@ export default function SignUp() {
         },
         body: JSON.stringify(formData),
       });
-      const data = await res.json();
+
+      const data: SignUpResponse = await res.json();
+
       console.log(data);
+
       if (data.success === false) {
         setLoading(false);
-        setError(data.message);
+        setError(data.message ?? 'Signup failed');
         return;
       }
+
       setLoading(false);
       setError(null);
       navigate('/sign-in');
     } catch (error) {
       setLoading(false);
-      setError(error.message);
+
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Something went wrong',
+      );
     }
   };
 
   return (
     <div className="p-3 max-w-lg mx-auto">
       {error && <p className="text-red-500 mt-5">{error}</p>}
-      <h1 className="text-3xl text-center font-semibold my-7">Sign Up</h1>
+
+      <h1 className="text-3xl text-center font-semibold my-7">
+        Sign Up
+      </h1>
+
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="text"
@@ -54,6 +86,7 @@ export default function SignUp() {
           id="username"
           onChange={handleChange}
         />
+
         <input
           type="email"
           placeholder="email"
@@ -61,6 +94,7 @@ export default function SignUp() {
           id="email"
           onChange={handleChange}
         />
+
         <input
           type="password"
           placeholder="password"
@@ -68,14 +102,21 @@ export default function SignUp() {
           id="password"
           onChange={handleChange}
         />
-        <button className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80">
-          Sign up
+
+        <button
+          disabled={loading}
+          className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80"
+        >
+          {loading ? 'Signing up...' : 'Sign up'}
         </button>
+
         <OAuth />
       </form>
+
       <div className="flex gap-2 mt-5">
         <p>Have an account?</p>
-        <Link to={'/sign-in'}>
+
+        <Link to="/sign-in">
           <span className="text-blue-700">Sign in</span>
         </Link>
       </div>

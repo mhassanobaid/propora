@@ -5,11 +5,12 @@ import { Navigation } from 'swiper/modules';
 import SwiperCore from 'swiper';
 import 'swiper/css/bundle';
 import ListingItem from '../components/ListingItem';
+import { Listing } from '../types/listing.types';
 
 export default function Home() {
-  const [offerListings, setOfferListings] = useState([]);
-  const [saleListings, setSaleListings] = useState([]);
-  const [rentListings, setRentListings] = useState([]);
+  const [offerListings, setOfferListings] = useState<Listing[]>([]);
+  const [saleListings, setSaleListings] = useState<Listing[]>([]);
+  const [rentListings, setRentListings] = useState<Listing[]>([]);
   SwiperCore.use([Navigation]);
   console.log(offerListings);
   useEffect(() => {
@@ -40,7 +41,7 @@ export default function Home() {
         const data = await res.json();
         setSaleListings(data);
       } catch (error) {
-        log(error);
+        console.log(error);
       }
     };
     fetchOfferListings();
@@ -79,7 +80,7 @@ export default function Home() {
                   background: `url(${listing.imageUrls[0]}) center no-repeat`,
                   backgroundSize: 'cover',
                 }}
-                className="h-[500px]"
+                className="h-125"
                 key={listing._id}
               ></div>
             </SwiperSlide>

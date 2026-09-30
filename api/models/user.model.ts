@@ -40,6 +40,11 @@ const userSchema = new Schema<IUser, mongoose.Model<IUser, {}, IUserMethods>>(
       default: "",
     },
 
+    avatarPublicId: {
+      type: String,
+      default: "",
+    },
+
     firebaseUid: {
       type: String,
       unique: true,

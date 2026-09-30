@@ -1,25 +1,35 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { FaSearch, FaBars, FaTimes } from 'react-icons/fa';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import type { RootState } from '../app/store';
 
 export default function Header() {
-  const { currentUser } = useSelector((state) => state.user);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { currentUser } = useSelector(
+    (state: RootState) => state.user,
+  );
 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
   const navigate = useNavigate();
-  const handleSubmit = (e) => {
+  const location = useLocation();
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const urlParams = new URLSearchParams(window.location.search);
+
+    const urlParams = new URLSearchParams(location.search);
     urlParams.set('searchTerm', searchTerm);
+
     const searchQuery = urlParams.toString();
+
     navigate(`/search?${searchQuery}`);
   };
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const searchTermFromUrl = urlParams.get('searchTerm');
+
     if (searchTermFromUrl) {
       setSearchTerm(searchTermFromUrl);
     }
@@ -31,7 +41,9 @@ export default function Header() {
         <div className="flex items-center justify-between gap-4">
           {/* Brand */}
           <Link to="/" className="shrink-0">
-            <h1 className="font-bold text-xl text-slate-700">Propora</h1>
+            <h1 className="font-bold text-xl text-slate-700">
+              Propora
+            </h1>
           </Link>
 
           {/* Search */}
@@ -46,7 +58,8 @@ export default function Header() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button>
+
+            <button type="submit">
               <FaSearch className="text-slate-600" />
             </button>
           </form>
@@ -71,11 +84,13 @@ export default function Header() {
               {currentUser ? (
                 <img
                   className="rounded-full h-7 w-7 object-cover"
-                  src={currentUser?.avatar}
+                  src={currentUser.avatar}
                   alt="profile"
                 />
               ) : (
-                <li className=" text-slate-700 hover:underline"> Sign in</li>
+                <span className="text-slate-700 hover:underline">
+                  Sign in
+                </span>
               )}
             </Link>
           </nav>
@@ -111,15 +126,20 @@ export default function Header() {
               About
             </Link>
 
-            <Link to="/profile">
+            <Link
+              to="/profile"
+              onClick={() => setIsMenuOpen(false)}
+            >
               {currentUser ? (
                 <img
                   className="rounded-full h-7 w-7 object-cover"
-                  src={currentUser?.avatar}
+                  src={currentUser.avatar}
                   alt="profile"
                 />
               ) : (
-                <li className=" text-slate-700 hover:underline"> Sign in</li>
+                <span className="text-slate-700 hover:underline">
+                  Sign in
+                </span>
               )}
             </Link>
           </nav>

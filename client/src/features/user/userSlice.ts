@@ -1,7 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
+import type { User } from '../../types/user.types';
 
 const initialState = {
-  currentUser: null,
+  currentUser: null as User | null,
   error: null,
   loading: false,
 };
