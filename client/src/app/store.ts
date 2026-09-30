@@ -1,0 +1,37 @@
+import { combineReducers, configureStore } from '@reduxjs/toolkit';
+import userReducer from '../features/user/userSlice';
+import { persistReducer, persistStore } from 'redux-persist';
+
+const storage = {
+  getItem: (key: string) => Promise.resolve(localStorage.getItem(key)),
+  setItem: (key: string, value: string) => {
+    localStorage.setItem(key, value);
+    return Promise.resolve();
+  },
+  removeItem: (key : string) => {
+    localStorage.removeItem(key);
+    return Promise.resolve();
+  },
+};
+
+const rootReducer = combineReducers({ user: userReducer });
+
+const persistConfig = {
+  key: 'root',
+  storage,
+  version: 1,
+};
+
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+export const store = configureStore({
+  reducer: persistedReducer,
+
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
+});
+
+export type RootState = ReturnType<typeof store.getState>;
+export const persistor = persistStore(store);
