@@ -4,8 +4,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node api/server.js",
-    "dev": "nodemon api/server.js",
+    "start": "tsx api/server.ts",
+    "dev": "tsx watch api/server.ts",
     "seed:listings": "node api/seed/seedListings.js",
     "build": "npm install && npm install --prefix client && npm run build --prefix client"
   },
@@ -33,6 +33,7 @@
     "validator": "^13.15.35"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.3.0",

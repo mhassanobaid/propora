@@ -1,13 +1,13 @@
 import type { NextFunction, Request, Response } from "express";
 
-type AsyncController = (
-  req: Request,
+type AsyncController<TRequest extends Request = Request> = (
+  req: TRequest,
   res: Response,
   next: NextFunction,
 ) => Promise<unknown>;
 
-const catchAsyncErrors = (theFunc: AsyncController) => (
-  req: Request,
+const catchAsyncErrors = <TRequest extends Request = Request>(theFunc: AsyncController<TRequest>,) => (
+  req: TRequest,
   res: Response,
   next: NextFunction,
 ) => {

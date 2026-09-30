@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 
-let cachedConnection = null;
-let cachedConnectionPromise = null;
+let cachedConnection: typeof mongoose | null = null;
+let cachedConnectionPromise: Promise<typeof mongoose> | null = null;
 
-const connectDB = async () => {
+const connectDB = async (): Promise<typeof mongoose> => {
   // Already connected
   if (cachedConnection && mongoose.connection.readyState === 1) {
     return cachedConnection;
@@ -15,9 +15,12 @@ const connectDB = async () => {
   }
 
   try {
-    cachedConnectionPromise = mongoose.connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 5000,
-    });
+    cachedConnectionPromise = mongoose.connect(
+      process.env.MONGO_URI as string,
+      {
+        serverSelectionTimeoutMS: 5000,
+      },
+    );
 
     cachedConnection = await cachedConnectionPromise;
 
@@ -28,7 +31,10 @@ const connectDB = async () => {
     cachedConnection = null;
     cachedConnectionPromise = null;
 
-    console.error("MongoDB connection failed:", error.message);
+    console.error(
+      "MongoDB connection failed:",
+      error instanceof Error ? error.message : error,
+    );
 
     throw error;
   }
