@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
 
-export type ListingType = "sale" | "rent";
+export enum ListingType {
+  Sale = "sale",
+  Rent = "rent",
+}
 
 export interface IListing {
   name: string;
