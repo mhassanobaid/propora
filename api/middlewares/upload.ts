@@ -1,12 +1,17 @@
 import multer from "multer";
+import type { Request } from "express";
 
 const storage = multer.memoryStorage();
 
-const fileFilter = (req, file, cb) => {
+const fileFilter = (
+  req: Request,
+  file: Express.Multer.File,
+  cb: multer.FileFilterCallback,
+) => {
   if (file.mimetype.startsWith("image/")) {
     cb(null, true);
   } else {
-    cb(new Error("Only image files are allowed"), false);
+    cb(new Error("Only image files are allowed"));
   }
 };
 
